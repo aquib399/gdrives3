@@ -1,4 +1,4 @@
-import { credentialsSchema, phoneSchema } from "@/validations/base";
+import { credentialsSchema, phoneSchema, objectIdSchema, otpSchema } from "@/validations/base";
 import z from "zod";
 
 export const signInSchema = z.object({
@@ -11,7 +11,9 @@ export const signUpSchema = z.object({
   details: z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.email(),
-    phone: phoneSchema.optional()
+    phone: phoneSchema.optional(),
+    otpRequestId: objectIdSchema,
+    otpCode: otpSchema
   }),
   credentials: credentialsSchema
 });

@@ -139,9 +139,9 @@ export const signUp: serviceFunction<
   const { details, credentials } = props;
 
   const otpResult = await otpClient.verifyById({
-    otpRequestId: "details.otpRequestId",
+    otpRequestId: details.otpRequestId,
     type: OtpType.TENANT_SIGNUP,
-    otp: "details.otpCode"
+    otp: details.otpCode
   });
   if (!otpResult.valid)
     return {
@@ -158,7 +158,8 @@ export const signUp: serviceFunction<
       response: createErrorResponse("Email already in use", null)
     };
 
-  const tenant = await Tenant.create(details);
+  const { otpRequestId, otpCode, ...tenantDetails } = details;
+  const tenant = await Tenant.create(tenantDetails);
 
   const passwordHash = await hashString(credentials.password);
   await Credential.create({

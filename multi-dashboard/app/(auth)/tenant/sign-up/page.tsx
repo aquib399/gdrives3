@@ -15,7 +15,7 @@ import Link from "next/link";
 export default function TenantSignUpPage() {
   const [formData, setFormData] = useState<SignUpPayload>({
     credentials: { mfaType: MFAType.None, password: "" },
-    details: { email: "", name:"",phone:"" }
+    details: { email: "", name: "", phone: "", otpRequestId: "", otpCode: "" }
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
