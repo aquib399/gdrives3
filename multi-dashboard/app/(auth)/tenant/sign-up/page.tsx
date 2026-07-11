@@ -11,7 +11,6 @@ import { TenantAPI } from "@/api/tenant";
 import { useState } from "react";
 import Link from "next/link";
 
-
 export default function TenantSignUpPage() {
   const [formData, setFormData] = useState<SignUpPayload>({
     credentials: { mfaType: MFAType.None, password: "" },

@@ -9,7 +9,10 @@ const env = process.env;
 export const NODE_ENV = (env.NODE_ENV as EnvType) || "development";
 export const PORT = String(env.PORT || 8082);
 
-export const DATABASE_URL = env.DATABASE_URL!;
+export const DATABASE_CONFIG = {
+  URL: env.DATABASE_URL!,
+  NAME: env.DATABASE_NAME!
+};
 
 export const TOKEN_CONFIG: TokenConfigMap = {
   admin: {
@@ -90,7 +93,6 @@ export const EMAIL_CONFIG = {
 };
 
 export const TOKEN_ENCRYPTION_KEY = env.TOKEN_ENCRYPTION_KEY!;
-
 
 import * as constants from "./env.js";
 

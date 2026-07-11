@@ -1,4 +1,4 @@
-import { DATABASE_URL } from "@/configs/env.js";
+import { DATABASE_CONFIG } from "@/configs/env.js";
 import mongoose from "mongoose";
 
 mongoose.connection.on("error", (error) =>
@@ -10,10 +10,10 @@ mongoose.connection.on("disconnected", () =>
 
 connectDB();
 export async function connectDB() {
-  const dbName = "trexind";
+  const dbName = DATABASE_CONFIG.NAME;
   try {
     console.log("Connecting to MongoDB...");
-    await mongoose.connect(DATABASE_URL, { dbName });
+    await mongoose.connect(DATABASE_CONFIG.URL, { dbName });
     console.log(`MongoDB connected: ${dbName}`);
   } catch (error) {
     console.error("MongoDB connection error:", error);

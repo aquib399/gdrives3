@@ -24,10 +24,6 @@ export type CookieConfig = {
 };
 
 export type TokenTypes =
-  | "access"
-  | "refresh"
-  | "otp"
-  | "forgetPassword"
-  | "oauth";
+  "access" | "refresh" | "otp" | "forgetPassword" | "oauth";
 export type TokenConfig = Record<TokenTypes, CookieConfig>;
 export type TokenConfigMap = Record<Role, TokenConfig>;

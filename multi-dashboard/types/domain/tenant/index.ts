@@ -1,4 +1,7 @@
-export type { SignInPayload, SignUpPayload } from "@/validations/v1/tenant/auth";
+export type {
+  SignInPayload,
+  SignUpPayload
+} from "@/validations/v1/tenant/auth";
 import { BaseEntity } from "@/types/base-entity";
 
 export interface ITenant extends BaseEntity {

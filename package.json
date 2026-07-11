@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "dashboard:dev": "npm --prefix multi-dashboard run dev",
+    "dashboard:build": "npm --prefix multi-dashboard run build",
+    "dashboard:start": "npm --prefix multi-dashboard start",
+    "dashboard:format": "npm --prefix multi-dashboard run format",
+    "server:dev": "npm --prefix server run dev",
+    "server:seed": "npm --prefix server run seed",
+    "server:build": "npm --prefix server run build",
+    "server:format": "npm --prefix server run format"
+  }
+}

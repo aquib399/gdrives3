@@ -1,4 +1,9 @@
-import { credentialsSchema, phoneSchema, objectIdSchema, otpSchema } from "@/validations/base.js";
+import {
+  credentialsSchema,
+  phoneSchema,
+  objectIdSchema,
+  otpSchema
+} from "@/validations/base.js";
 import { validate } from "@/middlewares/validation.js";
 import z from "zod";
 

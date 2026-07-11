@@ -10,7 +10,6 @@ import {
 const basePath = "/tenant";
 
 export function Sidebar() {
-
   async function handleLogout() {
     const response = await TenantAPI.tenant.signOut({
       payload: {},

@@ -1,4 +1,9 @@
-import { credentialsSchema, phoneSchema, objectIdSchema, otpSchema } from "@/validations/base";
+import {
+  credentialsSchema,
+  phoneSchema,
+  objectIdSchema,
+  otpSchema
+} from "@/validations/base";
 import z from "zod";
 
 export const signInSchema = z.object({

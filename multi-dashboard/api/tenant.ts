@@ -49,11 +49,11 @@ export const TenantAPI = {
         endpoint: endpoints.tenant.signUp,
         ...props
       }),
-          signOut: (props: ApiFunctionProps<tenantTypes.SignOutPayload>) =>
-            request<tenantTypes.SignOutResponse>({
-              method: "POST",
-              endpoint: endpoints.tenant.signOut,
-              ...props
-            })
+    signOut: (props: ApiFunctionProps<tenantTypes.SignOutPayload>) =>
+      request<tenantTypes.SignOutResponse>({
+        method: "POST",
+        endpoint: endpoints.tenant.signOut,
+        ...props
+      })
   }
 };

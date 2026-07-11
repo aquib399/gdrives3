@@ -9,7 +9,6 @@ export const PAGINATION = {
 export const IS_PRODUCTION = NODE_ENV === "production";
 export const CORS_ORIGINS = IS_PRODUCTION ? ORIGINS : true;
 
-
 export const DEFAULT_HEARTBEAT_INTERVAL_MS = 1_000; // 10 seconds
 
 export const MINIMUM_FILE_SIZE_BYTES = 1 * 1024; // 1 KB

@@ -6,9 +6,6 @@ import Loading from "@/components/loading";
 export default function TenantHomePage() {
   const { data, isLoading, error } = useTenantProfile({});
 
-
-
-
   if (isLoading) {
     return (
       <div className="h-full w-full">
@@ -26,5 +23,5 @@ export default function TenantHomePage() {
     );
   }
 
-    return <AnalyticsDashboard />;
+  return <AnalyticsDashboard />;
 }
