@@ -34,7 +34,9 @@ export const sendSignupOtp: serviceFunction<
   SendSignupOtpResponse
 > = async ({ email }) => {
   const exists = await Tenant.exists({
-    contactEmail: email.toLowerCase()
+    email: {
+      $regex: new RegExp(`^${email}$`, "i")
+    }
   });
   if (exists)
     return {
@@ -80,7 +82,9 @@ export const signIn: serviceFunction<
   SignInResponse
 > = async ({ body, req, res }) => {
   const tenant = await Tenant.findOne({
-    contactEmail: body.email.toLowerCase()
+    email: {
+      $regex: new RegExp(`^${body.email}$`, "i")
+    }
   });
   if (!tenant)
     return {
@@ -150,7 +154,9 @@ export const signUp: serviceFunction<
     };
 
   const exists = await Tenant.exists({
-    contactEmail: details.email.toLowerCase()
+    email: {
+      $regex: new RegExp(`^${details.email}$`, "i")
+    }
   });
   if (exists)
     return {

@@ -6,7 +6,6 @@ import { ITenant } from "../tenant";
 export interface IAdmin extends BaseEntity {
   name: string;
   email: string;
-  phone: string | null;
 }
 
 export interface GetProfileResponse {
@@ -25,7 +24,6 @@ export type SignOutResponse = {};
 
 export interface UpdateProfilePayload {
   name?: string;
-  phone?: string;
 }
 export type UpdateProfileResponse = GetProfileResponse;
 

@@ -1,5 +1,6 @@
 import { model, Types, Document, Schema } from "mongoose";
 import { BaseEntity } from "./base.js";
+import { Models } from "../names.js";
 
 export enum TokenType {
   Refresh = "refresh",
@@ -8,9 +9,7 @@ export enum TokenType {
 
 export enum TokenTarget {
   Admin = "admin",
-  Tenant = "tenant",
-  Staff = "staff",
-  Customer = "customer"
+  Tenant = "tenant"
 }
 
 export enum DeviceType {
@@ -106,4 +105,4 @@ const TokenSchema: Schema<ITokenDocument> = new Schema(
 TokenSchema.index({ targetId: 1, isActive: 1 }); // get all sessions for a user
 TokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // auto-delete expired
 
-export const Token = model<ITokenDocument>("Token", TokenSchema);
+export const Token = model<ITokenDocument>(Models.Token.ref, TokenSchema);

@@ -1,6 +1,7 @@
 import { model, Types, Document, Schema } from "mongoose";
 import { BaseEntity } from "./base.js";
 import { Role } from "@/types/role.js";
+import { Models } from "../names.js";
 
 export enum MFAType {
   None = "none",
@@ -67,6 +68,9 @@ const CredentialSchema: Schema<ICredentialDocument> = new Schema(
 
 CredentialSchema.index({ targetId: 1, target: 1 }, { unique: true });
 
-const Credential = model<ICredentialDocument>("Credential", CredentialSchema);
+const Credential = model<ICredentialDocument>(
+  Models.Credential.ref,
+  CredentialSchema
+);
 
 export { Credential };

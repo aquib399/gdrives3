@@ -1,24 +1,24 @@
 "use client";
 
 import { signUpSchema, SignUpPayload } from "@/validations/v1/admin/auth";
-import { getZodErrors } from "@/validations";
 import { MFAType } from "@/types/domain/credential";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { getZodErrors } from "@/validations";
+import { useRouter } from "next/navigation";
 import { AdminAPI } from "@/api/admin";
 import { useState } from "react";
 import Link from "next/link";
+import { Field } from "@/components/field";
 
 export default function AdminSignUpPage() {
   const [formData, setFormData] = useState<SignUpPayload>({
     credentials: { mfaType: MFAType.None, password: "" },
     details: { email: "", name: "" }
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const router = useRouter();
 
   const handleDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -51,8 +51,7 @@ export default function AdminSignUpPage() {
     const payload = {
       ...formData,
       details: {
-        ...formData.details,
-        phone: formData.details.phone || undefined
+        ...formData.details
       }
     };
     const result = signUpSchema.safeParse(payload);
@@ -71,7 +70,7 @@ export default function AdminSignUpPage() {
       }
     });
     if (!apiResult.data.error) {
-      window.location.href = "/admin/sign-in";
+      router.push("/admin/sign-in");
     }
     setIsLoading(false);
   };
@@ -84,79 +83,32 @@ export default function AdminSignUpPage() {
         </h2>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                value={formData.details.name}
-                onChange={handleDetailsChange}
-                placeholder="Full Name"
-              />
-              {errors["details.name"] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors["details.name"]}
-                </p>
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.details.email}
-                onChange={handleDetailsChange}
-                placeholder="Email Address"
-              />
-              {errors["details.email"] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors["details.email"]}
-                </p>
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="phone">Phone Number (optional)</Label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={formData.details.phone ?? ""}
-                onChange={handleDetailsChange}
-                placeholder="Phone Number (optional)"
-              />
-              {errors["details.phone"] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors["details.phone"]}
-                </p>
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative w-full">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={formData.credentials.password}
-                  onChange={handleCredentialsChange}
-                  placeholder="Password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {errors["credentials.password"] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors["credentials.password"]}
-                </p>
-              )}
-            </div>
+            <Field
+              id="name"
+              name="name"
+              label="Full Name"
+              value={formData.details.name}
+              onChange={handleDetailsChange}
+              error={errors["details.name"]}
+            />
+            <Field
+              id="email"
+              name="email"
+              type="email"
+              label="Email Address"
+              onChange={handleDetailsChange}
+              value={formData.details.email}
+              error={errors["details.email"]}
+            />
+            <Field
+              id="password"
+              name="password"
+              label="Password"
+              type="password"
+              onChange={handleCredentialsChange}
+              value={formData.credentials.password}
+              error={errors["credentials.password"]}
+            />
           </div>
           <div className="space-y-4">
             <Button type="submit" disabled={isLoading} className="w-full">

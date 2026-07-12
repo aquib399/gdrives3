@@ -1,10 +1,10 @@
 import { model, Types, Document, Schema } from "mongoose";
 import { BaseEntity } from "./base.js";
+import { Models } from "../names.js";
 
 export interface ITenant extends BaseEntity {
   name: string;
   email: string;
-  phone: string | null;
 }
 export type ITenantDocument = ITenant & Document;
 
@@ -20,10 +20,6 @@ const TenantSchema: Schema<ITenantDocument> = new Schema(
       unique: true,
       lowercase: true,
       trim: true
-    },
-    phone: {
-      type: String,
-      required: false
     }
   },
   {
@@ -32,4 +28,4 @@ const TenantSchema: Schema<ITenantDocument> = new Schema(
   }
 );
 
-export const Tenant = model<ITenantDocument>("Tenant", TenantSchema);
+export const Tenant = model<ITenantDocument>(Models.Tenant.ref, TenantSchema);

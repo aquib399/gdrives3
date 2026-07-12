@@ -1,6 +1,5 @@
 import {
   credentialsSchema,
-  phoneSchema,
   objectIdSchema,
   otpSchema
 } from "@/validations/base.js";
@@ -22,7 +21,6 @@ const signUpSchema = z.object({
   details: z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.email(),
-    phone: phoneSchema.optional(),
     otpRequestId: objectIdSchema,
     otpCode: otpSchema
   }),

@@ -1,28 +1,27 @@
 "use client";
 
 import { signUpSchema, SignUpPayload } from "@/validations/v1/tenant/auth";
-import { getZodErrors } from "@/validations";
 import { MFAType } from "@/types/domain/credential";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { getZodErrors } from "@/validations";
+import { useRouter } from "next/navigation";
 import { TenantAPI } from "@/api/tenant";
 import { useState } from "react";
 import Link from "next/link";
+import { Field } from "@/components/field";
 
 export default function TenantSignUpPage() {
   const [formData, setFormData] = useState<SignUpPayload>({
     credentials: { mfaType: MFAType.None, password: "" },
-    details: { email: "", name: "", phone: "", otpRequestId: "", otpCode: "" }
+    details: { email: "", name: "", otpRequestId: "", otpCode: "" }
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpInput, setOtpInput] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const router = useRouter();
   const handleDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -37,14 +36,12 @@ export default function TenantSignUpPage() {
     if (name === "email") setOtpSent(false);
   };
 
-  const handleVerticalChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      details: { ...prev.details, vertical: (value as any) || undefined }
-    }));
+  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "");
+    setOtpInput(value);
     setErrors((prev) => {
       const next = { ...prev };
-      delete next["details.vertical"];
+      delete next["details.otpCode"];
       return next;
     });
   };
@@ -96,7 +93,6 @@ export default function TenantSignUpPage() {
       ...formData,
       details: {
         ...formData.details,
-        phone: formData.details.phone || undefined,
         otpCode: otpInput
       }
     };
@@ -116,7 +112,7 @@ export default function TenantSignUpPage() {
       }
     });
     if (!apiResult.data.error) {
-      window.location.href = "/tenant/sign-in";
+      router.push("/tenant/sign-in");
     }
     setIsLoading(false);
   };
@@ -129,112 +125,57 @@ export default function TenantSignUpPage() {
         </h2>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                value={formData.details.name}
+            <Field
+              id="name"
+              name="name"
+              label="Name"
+              value={formData.details.name}
+              onChange={handleDetailsChange}
+              error={errors["details.name"]}
+            />
+            <div className="flex items-end gap-2">
+              <Field
+                id="email"
+                name="email"
+                type="email"
+                label="Email Address"
+                value={formData.details.email}
                 onChange={handleDetailsChange}
-                placeholder="Name"
+                error={errors["details.email"]}
+                wrapperClassName="flex-1"
               />
-              {errors["details.name"] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors["details.name"]}
-                </p>
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">Email Address</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.details.email}
-                  onChange={handleDetailsChange}
-                  placeholder="Email Address"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleSendOtp}
-                  disabled={isSendingOtp || !formData.details.email}
-                >
-                  {isSendingOtp ? "Sending…" : otpSent ? "Resend" : "Send OTP"}
-                </Button>
-              </div>
-              {errors["details.email"] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors["details.email"]}
-                </p>
-              )}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSendOtp}
+                disabled={isSendingOtp || !formData.details.email}
+              >
+                {isSendingOtp ? "Sending…" : otpSent ? "Resend" : "Send OTP"}
+              </Button>
             </div>
             {otpSent && (
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="otpInput">Verification Code</Label>
-                <Input
-                  id="otpInput"
-                  name="otpInput"
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={otpInput}
-                  onChange={(e) =>
-                    setOtpInput(e.target.value.replace(/\D/g, ""))
-                  }
-                  placeholder="6-digit code"
-                />
-                {errors["details.otpCode"] && (
-                  <p className="text-destructive mt-1 text-sm">
-                    {errors["details.otpCode"]}
-                  </p>
-                )}
-              </div>
-            )}
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="phone">Phone Number (optional)</Label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={formData.details.phone ?? ""}
-                onChange={handleDetailsChange}
-                placeholder="Phone Number (optional)"
+              <Field
+                id="otpInput"
+                name="otpInput"
+                label="Verification Code"
+                value={otpInput}
+                onChange={handleOtpChange}
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="6-digit code"
+                error={errors["details.otpCode"]}
               />
-              {errors["details.phone"] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors["details.phone"]}
-                </p>
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative w-full">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={formData.credentials.password}
-                  onChange={handleCredentialsChange}
-                  placeholder="Password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {errors["credentials.password"] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors["credentials.password"]}
-                </p>
-              )}
-            </div>
+            )}
+
+            <Field
+              id="password"
+              name="password"
+              type="password"
+              label="Password"
+              value={formData.credentials.password}
+              onChange={handleCredentialsChange}
+              error={errors["credentials.password"]}
+            />
           </div>
           <div className="space-y-4">
             <Button

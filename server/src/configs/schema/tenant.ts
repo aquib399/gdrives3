@@ -5,7 +5,7 @@ import { ITenant } from "@/models/mongo/tenant.js";
 import { Models } from "@/models/index.js";
 
 export const config: SchemaConfig<ITenant> = {
-  search: ["name", "email", "phone"],
+  search: ["name", "email"],
   allowedSorts: ["createdAt", "updatedAt"],
   defaultSort: { field: "createdAt", order: "desc" },
   requiredFilters: {},

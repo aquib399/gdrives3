@@ -7,7 +7,6 @@ import { BaseEntity } from "@/types/base-entity";
 export interface ITenant extends BaseEntity {
   name: string;
   email: string;
-  phone: string | null;
 }
 
 export interface GetProfileResponse {
@@ -26,6 +25,5 @@ export type SignOutResponse = {};
 
 export interface UpdateProfilePayload {
   name?: string;
-  phone?: string;
 }
 export type UpdateProfileResponse = GetProfileResponse;

@@ -1,10 +1,10 @@
 "use client";
 
-import { useAdminProfile } from "@/hooks/api/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAdminProfile } from "@/hooks/api/admin";
 import { Button } from "@/components/ui/button";
 import { Row } from "@/components/detail-row";
-import { Settings, Mail, Phone } from "lucide-react";
+import { Settings, Mail } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminAccountPage() {
@@ -17,8 +17,8 @@ export default function AdminAccountPage() {
     return <div className="text-muted-foreground p-6">Profile not found.</div>;
 
   return (
-    <div className="w-full">
-      <div className="mx-auto max-w-5xl space-y-6 p-6">
+    <section className="w-full">
+      <div className="mx-auto space-y-6 p-6">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-semibold">{profile.name}</h1>
@@ -48,17 +48,7 @@ export default function AdminAccountPage() {
                 </span>
               }
             />
-            <Row
-              label="Phone"
-              value={
-                profile.phone ? (
-                  <span className="flex items-center gap-1.5">
-                    <Phone className="text-muted-foreground h-3.5 w-3.5" />
-                    {profile.phone}
-                  </span>
-                ) : null
-              }
-            />
+
             <Row
               label="Member since"
               value={new Date(profile.createdAt).toLocaleDateString()}
@@ -66,6 +56,6 @@ export default function AdminAccountPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </section>
   );
 }

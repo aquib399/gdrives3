@@ -1,23 +1,12 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
+import { Models } from "../names.js";
 
 export enum OtpType {
   ADMIN_SIGNUP = "admin_signup",
   ADMIN_FORGET = "admin_forget",
 
   TENANT_SIGNUP = "tenant_signup",
-  TENANT_FORGET = "tenant_forget",
-  TENANT_EMAIL_CHANGE = "tenant_email_change",
-  TENANT_PHONE_CHANGE = "tenant_phone_change",
-
-  // STAFF_SIGNUP = "staff_signup", // cannot be used
-  STAFF_FORGET = "staff_forget",
-  STAFF_EMAIL_CHANGE = "staff_email_change",
-  STAFF_PHONE_CHANGE = "staff_phone_change",
-
-  USER_SIGNUP = "user_signup",
-  USER_FORGET = "user_forget",
-  USER_EMAIL_CHANGE = "user_email_change",
-  USER_PHONE_CHANGE = "user_phone_change"
+  TENANT_FORGET = "tenant_forget"
 }
 
 export interface IOTP extends Document {
@@ -62,6 +51,6 @@ const OTPSchema: Schema<IOTP> = new Schema(
 
 OTPSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-const Otp = mongoose.model<IOTP>("OTP", OTPSchema);
+const Otp = mongoose.model<IOTP>(Models.Otp.ref, OTPSchema);
 
 export { Otp };

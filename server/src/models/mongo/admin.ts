@@ -1,10 +1,10 @@
 import { model, Types, Document, Schema } from "mongoose";
 import { BaseEntity } from "./base.js";
+import { Models } from "../names.js";
 
 export interface IAdmin extends BaseEntity {
   name: string;
   email: string;
-  phone: string | null;
 }
 export type IAdminDocument = IAdmin & Document;
 
@@ -20,10 +20,6 @@ const AdminSchema: Schema<IAdminDocument> = new Schema(
       unique: true,
       lowercase: true,
       trim: true
-    },
-    phone: {
-      type: String,
-      required: false
     }
   },
   {
@@ -32,4 +28,4 @@ const AdminSchema: Schema<IAdminDocument> = new Schema(
   }
 );
 
-export const Admin = model<IAdminDocument>("Admin", AdminSchema);
+export const Admin = model<IAdminDocument>(Models.Admin.ref, AdminSchema);

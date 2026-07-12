@@ -51,7 +51,7 @@ export const signInLimiter = rateLimit({
     "Too many sign-in attempts. Please try again in 10 seconds."
   ),
   keyGenerator: (req) => {
-    const identifier = req.body?.email || req.body?.phone;
+    const identifier = req.body?.email;
     const ipKey = ipKeyGenerator(req.ip ?? "");
     return compositeIdentifierKey(identifier, ipKey);
   },
@@ -66,7 +66,7 @@ export const otpRequestLimiter = rateLimit({
     "Too many OTP requests. Please try again in 15 minutes."
   ),
   keyGenerator: (req) => {
-    const identifier = req.body?.email || req.body?.phone;
+    const identifier = req.body?.email;
     const ipKey = ipKeyGenerator(req.ip ?? "");
     return compositeIdentifierKey(identifier, ipKey);
   },

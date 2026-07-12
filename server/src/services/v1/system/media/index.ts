@@ -1,10 +1,5 @@
 import type * as validation from "@/validations/v1/system/media/index.js";
-import {
-  Media,
-  IMedia,
-  MimeType,
-  MediaUploadingStatus
-} from "@/models/mongo/media.js";
+import { Media, IMedia, MediaUploadingStatus } from "@/models/mongo/media.js";
 import {
   createErrorResponse,
   createSuccessResponse
@@ -34,7 +29,7 @@ export const initUpload: serviceFunction<
   const media = await Media.create({
     fileName: payload.fileName,
     // fullUrl: `https://${AWS_CONFIG.CLOUDFRONT_DOMAIN}/${data.key}`,
-    mimeType: payload.mimeType as MimeType,
+    mimeType: payload.mimeType,
     sizeInBytes: payload.sizeInBytes,
     uploadingStatus: MediaUploadingStatus.UPLOADING
   });

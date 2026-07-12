@@ -4,9 +4,6 @@ import { API_ENDPOINTS } from "@/lib/api-endpoints";
 import { ApiFunctionProps } from "@/types/api";
 import { request } from ".";
 
-type ContactChangePayload = { field: "email" | "phone"; value: string };
-type ConfirmContactChangePayload = ContactChangePayload & { otp: number };
-
 const endpoints = API_ENDPOINTS.tenant;
 
 export const TenantAPI = {

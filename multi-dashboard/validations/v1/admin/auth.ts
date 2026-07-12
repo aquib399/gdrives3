@@ -10,8 +10,7 @@ export type SignInPayload = z.infer<typeof signInSchema>;
 export const signUpSchema = z.object({
   details: z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.email(),
-    phone: phoneSchema.optional()
+    email: z.email()
   }),
   credentials: credentialsSchema
 });

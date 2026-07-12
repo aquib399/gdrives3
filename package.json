@@ -7,6 +7,7 @@
     "server:dev": "npm --prefix server run dev",
     "server:seed": "npm --prefix server run seed",
     "server:build": "npm --prefix server run build",
-    "server:format": "npm --prefix server run format"
+    "server:format": "npm --prefix server run format",
+    "format": "npm run dashboard:format && npm run server:format"
   }
 }

@@ -13,17 +13,17 @@ const methodColorMap: Record<string, string> = {
 };
 
 const statusColorMap: { [key: number]: string } = {
-  200: "\x1b[92m", // bright green — success
+  200: "\x1b[32m", // green — success
   201: "\x1b[92m", // bright green — created
 
-  304: "\x1b[2m", // dimmed white — cache hit
+  304: "\x1b[2;37m", // dimmed white — cache hit
 
   400: "\x1b[93m", // bright yellow — bad request
-  401: "\x1b[95m", // bright magenta — unauthorized
-  403: "\x1b[33m", // yellow — forbidden (distinct from 401)
+  401: "\x1b[33m", // yellow — unauthorized
+  403: "\x1b[38;5;214m", // yellow-orange — forbidden
   404: "\x1b[38;5;208m", // orange — not found
   409: "\x1b[38;5;208m", // orange — conflict
-  429: "\x1b[91m", // bright red — rate limited
+  429: "\x1b[38;5;214m", // yellow-orange — rate limited
 
   500: "\x1b[31m", // red — server error
   503: "\x1b[91m" // bright red — unavailable
