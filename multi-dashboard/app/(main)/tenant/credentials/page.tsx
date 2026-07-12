@@ -1,11 +1,13 @@
 "use client";
 import { withListing } from "@/components/hoc/with-listing";
 import { useApiCredentialList } from "@/hooks/api/tenant";
-import { IApiKey } from "@/types/domain/api-crendential";
+import { IApiKey } from "@/types/domain/api-credential";
 import { config } from "@/configs/schema/api-credential";
 import { ColumnDef } from "@/components/table-listing";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
+import { ApiCredentialRowActions } from "@/components/tenant/api-credential-row-actions";
+import { CreateApiCredentialButton } from "@/components/tenant/create-api-credential-button";
 
 const columns: ColumnDef<IApiKey>[] = [
   {
@@ -26,6 +28,12 @@ const columns: ColumnDef<IApiKey>[] = [
     header: "Created At",
     accessorKey: "createdAt",
     valueFormatter: formatDate
+  },
+  {
+    header: "Actions",
+    accessorKey: "_id",
+    variant: "actions",
+    Cell: (item) => <ApiCredentialRowActions apiKey={item} />
   }
 ];
 
@@ -37,6 +45,7 @@ export default withListing<IApiKey>({
   initialFilters: [],
   schemaConfig: config,
   useFetchList: useApiCredentialList,
+  HeaderUtils: <CreateApiCredentialButton />,
   getRowKey: (item) => item._id,
   getRowHref: (item) => `/tenant/credentials/${item._id}`
 });

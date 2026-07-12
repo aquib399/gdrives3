@@ -1,4 +1,4 @@
-import { model, Schema, HydratedDocument } from "mongoose";
+import { model, Schema, HydratedDocument, Types } from "mongoose";
 import { BaseEntity } from "./base.js";
 import { Models } from "../names.js";
 
@@ -13,6 +13,7 @@ export interface IMedia extends BaseEntity {
   fullUrl: string;
   mimeType: string;
   sizeInBytes: number;
+  tenantId: Types.ObjectId;
   uploadingStatus: MediaUploadingStatus;
 }
 
@@ -22,6 +23,7 @@ const MediaSchema = new Schema<IMedia>(
   {
     fileName: { type: String, required: true },
     fullUrl: { type: String, required: true },
+    tenantId: { type: Types.ObjectId, required: true, ref: Models.Tenant.ref },
     mimeType: { type: String, required: true },
     sizeInBytes: { type: Number, required: true },
     uploadingStatus: {

@@ -3,8 +3,17 @@ export type {
   SignUpPayload
 } from "@/validations/v1/tenant/auth";
 import { BaseEntity } from "@/types/base-entity";
-import { PaginatedResponse } from "@/types/pagination";
-import { IApiKey } from "../api-crendential";
+
+export type {
+  CreateApiCredentialPayload,
+  CreateApiCredentialResponse,
+  DeleteApiCredentialResponse,
+  GetApiCredentialResponse,
+  IApiKey,
+  ListApiCredentialsResponse,
+  UpdateApiCredentialPayload,
+  UpdateApiCredentialResponse
+} from "../api-credential";
 
 export interface ITenant extends BaseEntity {
   name: string;
@@ -30,9 +39,7 @@ export interface UpdateProfilePayload {
   name?: string;
 }
 export type UpdateProfileResponse = GetProfileResponse;
+
 export interface GetAuthUrlResponse {
   url: string;
 }
-
-export type ListApiCredentialsResponse = PaginatedResponse<IApiKey>;
-export type GetApiCredentialResponse = { apiKey: IApiKey };

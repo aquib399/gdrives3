@@ -7,3 +7,5 @@ export * from "./mongo/token.js";
 export * from "./mongo/media.js";
 export * from "./mongo/otp.js";
 export * from "./mongo/tenant.js";
+export * from "./mongo/api-key.js";
+export * from "./mongo/gdrive.js";

@@ -1,14 +1,12 @@
 import { invalidateTenantCache } from "@/services/v1/shared/tenant/index.js";
 import type * as validation from "@/validations/v1/tenant/google.js";
 import { googleClient } from "@/clients/google.js";
+import { GDrive } from "@/models/mongo/gdrive.js";
 import { GOOGLE_CONFIG } from "@/configs/env.js";
-import crypto from "crypto";
 import {
   createErrorResponse,
   createSuccessResponse
 } from "@/utils/response.js";
-import { ApiKey } from "@/models/mongo/api-key.js";
-import { GDrive } from "@/models/mongo/gdrive.js";
 
 interface GetAuthUrlPayload {
   tenantId: string;
@@ -64,7 +62,7 @@ export const handleCallback: serviceFunction<
       };
     }
 
-    const gDrive = await GDrive.findOneAndUpdate(
+    await GDrive.findOneAndUpdate(
       { tenantId },
       {
         tenantId,
@@ -73,18 +71,7 @@ export const handleCallback: serviceFunction<
         expiryDate: tokens.expiry_date
       },
       { upsert: true, returnDocument: "after" }
-    );
-
-    const keyString = `sk_${crypto.randomBytes(16).toString("hex")}`;
-    const secretString = crypto.randomBytes(32).toString("hex");
-
-    await ApiKey.create({
-      tenantId,
-      gDriveId: gDrive._id,
-      key: keyString,
-      secret: secretString,
-      name: "Default API Key"
-    });
+    ).lean();
 
     void invalidateTenantCache(tenantId);
 

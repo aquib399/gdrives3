@@ -1,5 +1,5 @@
-import * as validation from "@/validations/v1/system/media/index.js";
-import * as controller from "@/controllers/v1/system/media/index.js";
+import * as validation from "@/validations/v1/tenant/media.js";
+import * as controller from "@/controllers/v1/tenants/media.js";
 import * as base from "@/controllers/index.js";
 import { Router } from "express";
 const router = Router();

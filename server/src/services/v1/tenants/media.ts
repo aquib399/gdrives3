@@ -1,5 +1,5 @@
-import type * as validation from "@/validations/v1/system/media/index.js";
 import { Media, IMedia, MediaUploadingStatus } from "@/models/mongo/media.js";
+import type * as validation from "@/validations/v1/tenant/media.js";
 import {
   createErrorResponse,
   createSuccessResponse
@@ -10,7 +10,10 @@ import {
   completeMultipartUpload
 } from "@/utils/media.js";
 
-type InitUploadPayload = validation.InitUploadPayload;
+type InitUploadPayload = {
+  payload: validation.InitUploadPayload;
+  tenantId: string;
+};
 type InitUploadResponse = {
   config: MultipartUploadResult;
   media: IMedia;
@@ -19,7 +22,9 @@ type InitUploadResponse = {
 export const initUpload: serviceFunction<
   InitUploadPayload,
   InitUploadResponse
-> = async (payload) => {
+> = async (props) => {
+  const { payload, tenantId } = props;
+
   const data = await initMultipartUpload({
     fileName: payload.fileName,
     mimeType: payload.mimeType,
@@ -31,6 +36,7 @@ export const initUpload: serviceFunction<
     // fullUrl: `https://${AWS_CONFIG.CLOUDFRONT_DOMAIN}/${data.key}`,
     mimeType: payload.mimeType,
     sizeInBytes: payload.sizeInBytes,
+    tenantId,
     uploadingStatus: MediaUploadingStatus.UPLOADING
   });
 
@@ -50,15 +56,23 @@ export const initUpload: serviceFunction<
   };
 };
 
-type CompleteUploadPayload = validation.CompleteUploadPayload;
+type CompleteUploadPayload = {
+  payload: validation.CompleteUploadPayload;
+  tenantId: string;
+};
 type CompleteUploadResponse = IMedia;
 export const completeUpload: serviceFunction<
   CompleteUploadPayload,
   CompleteUploadResponse
-> = async (payload) => {
+> = async (props) => {
+  const { payload, tenantId } = props;
   const { mediaId, uploadId, parts } = payload;
 
-  const mediaDoc = await Media.findById(mediaId);
+  const mediaDoc = await Media.findOne({
+    _id: mediaId,
+    tenantId: tenantId,
+    uploadingStatus: MediaUploadingStatus.UPLOADING
+  });
   if (!mediaDoc) {
     const response = createErrorResponse("Media not found", { mediaId });
     return { status: 404, response };

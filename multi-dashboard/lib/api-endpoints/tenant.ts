@@ -19,7 +19,10 @@ export const TENANT_ENDPOINTS = () => {
     },
     apiCredential: {
       list: `${base}/api-credentials`,
-      get: (id: string) => `${base}/api-credentials/${id}`
+      get: (id: string) => `${base}/api-credentials/${id}`,
+      create: `${base}/api-credentials`,
+      update: (id: string) => `${base}/api-credentials/${id}`,
+      delete: (id: string) => `${base}/api-credentials/${id}`
     }
   };
 };

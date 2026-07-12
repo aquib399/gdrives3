@@ -1,5 +1,5 @@
 import { SchemaConfig } from "@/types/filter-config";
-import { IApiKey } from "@/types/domain/api-crendential";
+import { IApiKey } from "@/types/domain/api-credential";
 
 export const config: SchemaConfig<IApiKey> = {
   search: ["name", "key"],

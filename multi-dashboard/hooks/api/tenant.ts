@@ -104,3 +104,84 @@ export const useApiCredentialList = (
     select: mergeInfinitePaginatedResponse
   });
 };
+
+export const useApiCredential = (
+  props: HookProps<typeof TenantAPI.apiCredential.get>
+) => {
+  const id = props?.payload?.id;
+
+  return useQuery({
+    queryKey: ["tenant", "apiCredential", id],
+    queryFn: async () =>
+      TenantAPI.apiCredential
+        .get({ ...buildApiFunctionProps({ props }), forceReturn: false })
+        .then((res) => res.data),
+    enabled: !!id
+  });
+};
+
+export const useCreateApiCredential = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { name: string }) =>
+      TenantAPI.apiCredential
+        .create({
+          payload,
+          forceReturn: true,
+          toastConfig: { success: { enabled: true }, error: { enabled: true } }
+        })
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tenant", "list", "apiCredentials"]
+      });
+    }
+  });
+};
+
+export const useUpdateApiCredential = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { id: string; name?: string; isActive?: boolean }) =>
+      TenantAPI.apiCredential
+        .update({
+          payload,
+          forceReturn: true,
+          toastConfig: { success: { enabled: true }, error: { enabled: true } }
+        })
+        .then((res) => res.data),
+    onSuccess: (_data, payload) => {
+      queryClient.invalidateQueries({
+        queryKey: ["tenant", "list", "apiCredentials"]
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["tenant", "apiCredential", payload.id]
+      });
+    }
+  });
+};
+
+export const useDeleteApiCredential = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { id: string }) =>
+      TenantAPI.apiCredential
+        .delete({
+          payload,
+          forceReturn: true,
+          toastConfig: { success: { enabled: true }, error: { enabled: true } }
+        })
+        .then((res) => res.data),
+    onSuccess: (_data, payload) => {
+      queryClient.invalidateQueries({
+        queryKey: ["tenant", "list", "apiCredentials"]
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["tenant", "apiCredential", payload.id]
+      });
+    }
+  });
+};
