@@ -1,10 +1,19 @@
 "use client";
 
 import type { UpdateProfilePayload } from "@/types/domain/tenant";
-import { buildApiFunctionProps } from ".";
+import {
+  buildApiFunctionProps,
+  getNextPageParam,
+  mergeInfinitePaginatedResponse
+} from ".";
 import { TenantAPI } from "@/api/tenant";
 import { HookProps } from "@/types/api";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery
+} from "@tanstack/react-query";
 
 export const useTenantVerifyToken = () => {
   return useQuery({
@@ -63,5 +72,35 @@ export const useSendTenantSignupOtp = () => {
           toastConfig: { success: { enabled: true }, error: { enabled: true } }
         })
         .then((res) => res.data)
+  });
+};
+
+export const useGoogleAuthUrl = (props: HookProps) => {
+  return useQuery({
+    queryKey: ["google", "authUrl", props?.queryParams],
+    queryFn: async () =>
+      TenantAPI.google
+        .getAuthUrl({ ...buildApiFunctionProps({ props }), forceReturn: false })
+        .then((res) => res.data),
+    enabled: false
+  });
+};
+
+export const useApiCredentialList = (
+  props: HookProps<typeof TenantAPI.apiCredential.list>
+) => {
+  return useInfiniteQuery({
+    queryKey: ["tenant", "list", "apiCredentials", props?.queryParams],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) =>
+      TenantAPI.apiCredential
+        .list({
+          ...buildApiFunctionProps({ props, pageParam }),
+          forceReturn: false
+        })
+        .then((res) => res.data),
+
+    getNextPageParam: getNextPageParam,
+    select: mergeInfinitePaginatedResponse
   });
 };

@@ -1,4 +1,4 @@
-import { model, Types, Document, Schema, HydratedDocument } from "mongoose";
+import { model, Schema, HydratedDocument } from "mongoose";
 import { BaseEntity } from "./base.js";
 import { Models } from "../names.js";
 

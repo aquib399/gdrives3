@@ -1,5 +1,6 @@
 import type { UpdateProfilePayload } from "@/validations/v1/tenant/index.js";
 import { ITenant, Tenant } from "@/models/index.js";
+import { GDrive } from "@/models/mongo/gdrive.js";
 import { cacheClient } from "@/clients/index.js";
 import { buildCacheKey } from "@/utils/cache.js";
 import {
@@ -13,6 +14,7 @@ import {
 
 interface GetProfileResponse {
   tenant: ITenant;
+  driveConnected: boolean;
 }
 
 export const getProfile: serviceFunction<
@@ -24,18 +26,21 @@ export const getProfile: serviceFunction<
     identifier: `${id}:profile`
   });
 
-  const enrichedTenant = await cacheClient.get({
+  const { driveConnected, tenant } = await cacheClient.get({
     key,
     query: async () => {
-      const tenant = await Tenant.findById(id).lean();
-      return tenant;
+      const [tenant, driveConnected] = await Promise.all([
+        Tenant.findById(id).lean(),
+        GDrive.exists({ tenantId: id }).lean()
+      ]);
+      return { tenant, driveConnected: Boolean(driveConnected) };
     },
     config: {
       shouldCache: (val) => val !== null
     }
   });
 
-  if (!enrichedTenant) {
+  if (!tenant) {
     return {
       status: 404,
       response: createErrorResponse("Tenant not found", null)
@@ -47,7 +52,8 @@ export const getProfile: serviceFunction<
     response: createSuccessResponse<GetProfileResponse>(
       "Tenant profile fetched successfully",
       {
-        tenant: enrichedTenant
+        tenant,
+        driveConnected
       }
     )
   };

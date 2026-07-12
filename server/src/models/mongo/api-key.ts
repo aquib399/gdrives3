@@ -1,18 +1,17 @@
-import mongoose, { Schema, Document } from "mongoose";
+import { Types, Schema, HydratedDocument, model } from "mongoose";
 import { BaseEntity } from "./base.js";
 import { Models } from "../names.js";
 
 export interface IApiKey extends BaseEntity {
-  tenantId: mongoose.Types.ObjectId;
-  gDriveId: mongoose.Types.ObjectId;
+  tenantId: Types.ObjectId;
+  gDriveId: Types.ObjectId;
   key: string;
   secret: string;
   name: string;
   isActive: boolean;
-  createdAt: Date;
 }
 
-export type IApiKeyDocument = IApiKey & Document;
+export type IApiKeyDocument = HydratedDocument<IApiKey>;
 
 const ApiKeySchema = new Schema<IApiKey>(
   {
@@ -38,4 +37,4 @@ const ApiKeySchema = new Schema<IApiKey>(
   }
 );
 
-export default mongoose.model<IApiKey>(Models.ApiKey.ref, ApiKeySchema);
+export const ApiKey = model<IApiKey>(Models.ApiKey.ref, ApiKeySchema);

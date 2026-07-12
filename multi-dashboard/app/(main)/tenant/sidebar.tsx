@@ -1,6 +1,6 @@
 "use client";
 
-import { Store, LayoutDashboard } from "lucide-react";
+import { Store, LayoutDashboard, KeyIcon, FilesIcon } from "lucide-react";
 import { TenantAPI } from "@/api/tenant";
 import {
   SidebarLink,
@@ -29,6 +29,24 @@ export function Sidebar() {
       href: basePath,
       icon: LayoutDashboard,
       exact: true
+    },
+    {
+      title: "Files",
+      href: `${basePath}/files`,
+      icon: FilesIcon,
+      exact: false
+    },
+    {
+      title: "Credentials",
+      href: `${basePath}/credentials`,
+      icon: KeyIcon,
+      exact: false
+    },
+    {
+      title: "Settings",
+      href: `${basePath}/settings`,
+      icon: Store,
+      exact: false
     }
   ];
 

@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Types } from "mongoose";
+import { model, Document, HydratedDocument, Schema, Types } from "mongoose";
 import { Models } from "../names.js";
 
 export enum OtpType {
@@ -18,6 +18,8 @@ export interface IOTP extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type IOTPDocument = HydratedDocument<IOTP>;
 
 const OTPSchema: Schema<IOTP> = new Schema(
   {
@@ -51,6 +53,4 @@ const OTPSchema: Schema<IOTP> = new Schema(
 
 OTPSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-const Otp = mongoose.model<IOTP>(Models.Otp.ref, OTPSchema);
-
-export { Otp };
+export const Otp = model<IOTP>(Models.Otp.ref, OTPSchema);

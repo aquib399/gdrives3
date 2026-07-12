@@ -1,6 +1,7 @@
 export const TENANT_ENDPOINTS = () => {
   const version = "v1";
   const base = `/api/tenant/${version}`;
+  const google = `${base}/google`;
   const auth = `${base}/auth`;
   return {
     base,
@@ -12,6 +13,13 @@ export const TENANT_ENDPOINTS = () => {
       verifyToken: `${base}/verify-token`,
       getProfile: `${base}/profile`,
       updateProfile: `${base}/profile`
+    },
+    google: {
+      getAuthUrl: `${google}/auth/getAuthUrl`
+    },
+    apiCredential: {
+      list: `${base}/api-credentials`,
+      get: (id: string) => `${base}/api-credentials/${id}`
     }
   };
 };

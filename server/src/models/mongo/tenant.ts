@@ -1,4 +1,4 @@
-import { model, Types, Document, Schema } from "mongoose";
+import { model, Types, Schema, HydratedDocument } from "mongoose";
 import { BaseEntity } from "./base.js";
 import { Models } from "../names.js";
 
@@ -6,7 +6,7 @@ export interface ITenant extends BaseEntity {
   name: string;
   email: string;
 }
-export type ITenantDocument = ITenant & Document;
+export type ITenantDocument = HydratedDocument<ITenant>;
 
 const TenantSchema: Schema<ITenantDocument> = new Schema(
   {

@@ -52,5 +52,45 @@ export const TenantAPI = {
         endpoint: endpoints.tenant.signOut,
         ...props
       })
+  },
+  google: {
+    getAuthUrl: (props: ApiFunctionProps) =>
+      request<tenantTypes.GetAuthUrlResponse>({
+        method: "GET",
+        endpoint: endpoints.google.getAuthUrl,
+        ...props
+      })
+  },
+  apiCredential: {
+    list: (props: ApiFunctionProps) =>
+      request<tenantTypes.ListApiCredentialsResponse>({
+        method: "GET",
+        endpoint: endpoints.apiCredential.list,
+        ...props
+      }),
+    get: (props: ApiFunctionProps<{ id: string }>) =>
+      request<tenantTypes.GetApiCredentialResponse>({
+        method: "GET",
+        endpoint: endpoints.apiCredential.get(props.payload.id),
+        ...props
+      }),
+    create: (props: ApiFunctionProps<tenantTypes.CreateApiCredentialPayload>) =>
+      request<tenantTypes.CreateApiCredentialResponse>({
+        method: "POST",
+        endpoint: endpoints.apiCredential.list,
+        ...props
+      }),
+    update: (props: ApiFunctionProps<tenantTypes.UpdateApiCredentialPayload>) =>
+      request<tenantTypes.UpdateApiCredentialResponse>({
+        method: "PUT",
+        endpoint: endpoints.apiCredential.get(props.payload.id),
+        ...props
+      }),
+    delete: (props: ApiFunctionProps<{ id: string }>) =>
+      request<tenantTypes.DeleteApiCredentialResponse>({
+        method: "DELETE",
+        endpoint: endpoints.apiCredential.get(props.payload.id),
+        ...props
+      })
   }
 };

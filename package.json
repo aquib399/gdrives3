@@ -5,9 +5,13 @@
     "dashboard:start": "npm --prefix multi-dashboard start",
     "dashboard:format": "npm --prefix multi-dashboard run format",
     "server:dev": "npm --prefix server run dev",
+    "server:start": "npm --prefix server run start",
     "server:seed": "npm --prefix server run seed",
     "server:build": "npm --prefix server run build",
     "server:format": "npm --prefix server run format",
-    "format": "npm run dashboard:format && npm run server:format"
+    "build": "start cmd /c \"npm run dashboard:build\" && start cmd /c \"npm run server:build\"",
+    "format": "start cmd /c \"npm run dashboard:format\" && start cmd /c \"npm run server:format\"",
+    "dev": "start cmd /c \"npm run dashboard:dev\" && start cmd /c \"npm run server:dev\"",
+    "start": "start cmd /c \"npm run dashboard:start\" && start cmd /c \"npm run server:start\""
   }
 }

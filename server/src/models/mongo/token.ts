@@ -1,4 +1,4 @@
-import { model, Types, Document, Schema } from "mongoose";
+import { model, Types, Schema, HydratedDocument } from "mongoose";
 import { BaseEntity } from "./base.js";
 import { Models } from "../names.js";
 
@@ -38,7 +38,7 @@ export interface IToken extends BaseEntity {
   lastUsedAt: Date;
   expiresAt: Date;
 }
-export type ITokenDocument = IToken & Document;
+export type ITokenDocument = HydratedDocument<IToken>;
 
 const TokenMetadataSchema = new Schema<ITokenMetadata>(
   {

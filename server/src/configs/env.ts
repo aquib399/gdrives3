@@ -94,6 +94,13 @@ export const EMAIL_CONFIG = {
 
 export const TOKEN_ENCRYPTION_KEY = env.TOKEN_ENCRYPTION_KEY!;
 
+export const GOOGLE_CONFIG = {
+  CLIENT_ID: env.GOOGLE_CLIENT_ID!,
+  CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET!,
+  REDIRECT_URI: env.GOOGLE_REDIRECT_URI!,
+  CLIENT_REDIRECT_URI: env.CLIENT_REDIRECT_URI!
+};
+
 import * as constants from "./env.js";
 
 function CheckObjectValues(obj: Record<string, any>, parent: string): void {

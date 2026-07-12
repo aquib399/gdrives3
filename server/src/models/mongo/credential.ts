@@ -1,4 +1,4 @@
-import { model, Types, Document, Schema } from "mongoose";
+import { model, Types, Schema, HydratedDocument } from "mongoose";
 import { BaseEntity } from "./base.js";
 import { Role } from "@/types/role.js";
 import { Models } from "../names.js";
@@ -20,7 +20,7 @@ export interface ICredential extends BaseEntity {
   backupCodes?: string[];
 }
 
-export type ICredentialDocument = ICredential & Document;
+export type ICredentialDocument = HydratedDocument<ICredential>;
 
 const CredentialSchema: Schema<ICredentialDocument> = new Schema(
   {
@@ -68,9 +68,7 @@ const CredentialSchema: Schema<ICredentialDocument> = new Schema(
 
 CredentialSchema.index({ targetId: 1, target: 1 }, { unique: true });
 
-const Credential = model<ICredentialDocument>(
+export const Credential = model<ICredentialDocument>(
   Models.Credential.ref,
   CredentialSchema
 );
-
-export { Credential };

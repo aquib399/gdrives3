@@ -17,9 +17,8 @@ const geistMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "trexind Dashboard",
-  description:
-    "Manage your tenant with ease using the trexind Dashboard. Access powerful tools and insights to optimize your operations and drive growth."
+  title: "S3 using google drive",
+  description: "Connect your Google Drive to S3 and manage your files easily."
 };
 
 export default function RootLayout({

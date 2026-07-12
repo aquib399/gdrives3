@@ -208,7 +208,7 @@ const MetricBadge = ({
 
 export function AnalyticsDashboard() {
   return (
-    <div className="bg-background flex min-h-screen flex-col gap-8 p-4 md:p-8 xl:p-10">
+    <div className="bg-background flex flex-col gap-8 p-4 md:p-8">
       {/* HEADER SECTION */}
       <div className="border-border flex flex-col gap-4 border-b pb-6 md:flex-row md:items-end md:justify-between">
         <div>

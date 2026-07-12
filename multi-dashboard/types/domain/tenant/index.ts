@@ -3,6 +3,8 @@ export type {
   SignUpPayload
 } from "@/validations/v1/tenant/auth";
 import { BaseEntity } from "@/types/base-entity";
+import { PaginatedResponse } from "@/types/pagination";
+import { IApiKey } from "../api-crendential";
 
 export interface ITenant extends BaseEntity {
   name: string;
@@ -11,6 +13,7 @@ export interface ITenant extends BaseEntity {
 
 export interface GetProfileResponse {
   tenant: ITenant;
+  driveConnected: boolean;
 }
 
 export interface SignInResponse {
@@ -27,3 +30,9 @@ export interface UpdateProfilePayload {
   name?: string;
 }
 export type UpdateProfileResponse = GetProfileResponse;
+export interface GetAuthUrlResponse {
+  url: string;
+}
+
+export type ListApiCredentialsResponse = PaginatedResponse<IApiKey>;
+export type GetApiCredentialResponse = { apiKey: IApiKey };
