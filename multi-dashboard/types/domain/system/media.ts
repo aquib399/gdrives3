@@ -1,4 +1,5 @@
 import { BaseEntity } from "@/types/base-entity";
+import type { PaginatedResponse } from "@/types/pagination";
 export type {
   CompleteUploadPayload,
   InitUploadPayload
@@ -104,12 +105,32 @@ export interface IMedia extends BaseEntity {
   fileName: string;
   fullUrl: string;
   mimeType: MimeType;
+  gdriveFileId?: string;
   sizeInBytes: number;
   uploadingStatus: MediaUploadingStatus;
 }
 
+export interface GetMediaResponse {
+  media: IMedia;
+}
+
+export interface UpdateMediaPayload {
+  id: string;
+  fileName?: string;
+}
+
+export interface UpdateMediaResponse {
+  media: IMedia;
+}
+
+export interface DeleteMediaResponse {
+  mediaId: string;
+}
+
+export type ListMediaResponse = PaginatedResponse<IMedia>;
+
 export type InitUploadResponse = {
-  config: MultipartUploadResult;
+  uploadUrl: string;
   media: IMedia;
 };
 
@@ -119,7 +140,7 @@ export interface MultipartUploadResult {
   partSize: number;
   urls: string[];
 }
-export type CompleteUploadResponse = IMedia;
+export type CompleteUploadResponse = { media: IMedia };
 
 export interface UploadMediaProps {
   file: File;

@@ -3,6 +3,7 @@ export const TENANT_ENDPOINTS = () => {
   const base = `/api/tenant/${version}`;
   const google = `${base}/google`;
   const auth = `${base}/auth`;
+  const media = `${base}/media`;
   return {
     base,
     tenant: {
@@ -23,6 +24,14 @@ export const TENANT_ENDPOINTS = () => {
       create: `${base}/api-credentials`,
       update: (id: string) => `${base}/api-credentials/${id}`,
       delete: (id: string) => `${base}/api-credentials/${id}`
+    },
+    media: {
+      list: `${media}`,
+      get: (id: string) => `${media}/${id}`,
+      update: (id: string) => `${media}/${id}`,
+      delete: (id: string) => `${media}/${id}`,
+      initUpload: `${media}/init`,
+      completeUpload: `${media}/complete`
     }
   };
 };

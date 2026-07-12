@@ -37,14 +37,10 @@ export function CreateApiCredentialButton() {
           Create API Credential
         </Button>
       </ModalTrigger>
-      <ModalContent className="w-[min(100vw-2rem,32rem)] p-6">
+      <ModalContent anchor className="w-80 p-6">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <h2 className="text-lg font-semibold">New credential</h2>
-            <p className="text-muted-foreground text-sm">
-              Only the display name is required. The server will generate the
-              key and secret.
-            </p>
           </div>
 
           <Field

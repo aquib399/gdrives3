@@ -113,7 +113,7 @@ export const createApiCredential: serviceFunction<
   CreateApiCredentialPayload,
   CreateApiCredentialResponse
 > = async ({ tenantId, data }) => {
-  const gDrive = await GDrive.findOne({ tenantId });
+  const gDrive = await GDrive.exists({ tenantId });
   if (!gDrive) {
     return {
       status: 400,
@@ -126,16 +126,15 @@ export const createApiCredential: serviceFunction<
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const apiKey = new ApiKey({
       tenantId,
-      gDriveId: gDrive._id,
       name,
       key: `ak_${crypto.randomBytes(16).toString("hex")}`,
-      secret: crypto.randomBytes(32).toString("hex"),
+      secret: `sk_${crypto.randomBytes(32).toString("hex")}`,
       isActive: true
     });
 
     try {
       await apiKey.save();
-      await invalidateApiCredentialCache(apiKey._id);
+      void invalidateApiCredentialCache(apiKey._id);
       return {
         status: 201,
         response: createSuccessResponse("API credential created successfully", {

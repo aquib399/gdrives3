@@ -45,8 +45,9 @@ export function ApiCredentialRowActions({ apiKey }: { apiKey: IApiKey }) {
   return (
     <Modal open={open} setOpen={setOpen}>
       <ModalTrigger>
-        <Button variant="ghost" size="icon-sm" aria-label="Edit API credential">
-          <PencilLine className="size-4" />
+        <Button variant="outline" aria-label="Edit API credential">
+          Edit
+          <PencilLine className="size-3" />
         </Button>
       </ModalTrigger>
       <ModalContent anchor className="w-[min(100vw-2rem,26rem)] p-5">

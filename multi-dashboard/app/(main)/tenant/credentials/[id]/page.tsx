@@ -1,26 +1,37 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Check, Copy, Eye, EyeOff } from "lucide-react";
 import { useApiCredential } from "@/hooks/api/tenant";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Row } from "@/components/detail-row";
 import { Badge } from "@/components/ui/badge";
+import { useParams } from "next/navigation";
 import { formatDate } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
-const hiddenSecret = "********####********####";
+const hiddenSecret = "*********************";
 
-export default function ApiCredentialDetailPage({
-  params
-}: {
-  params: { id: string };
-}) {
-  const { data, isPending } = useApiCredential({ payload: { id: params.id } });
-  const apiKey = data?.data?.apiKey;
+export default function ApiCredentialDetailPage() {
+  const params = useParams();
+  const id = String(params?.id);
+  const { data, isPending } = useApiCredential({ payload: { id } });
   const [revealSecret, setRevealSecret] = useState(false);
+  const [copiedField, setCopiedField] = useState<"key" | "secret" | null>(null);
+  const apiKey = data?.data?.apiKey;
+
+  const copyValue = async (field: "key" | "secret", value: string) => {
+    await navigator.clipboard.writeText(value);
+    setCopiedField(field);
+  };
+
+  useEffect(() => {
+    if (!copiedField) return;
+
+    const timeout = window.setTimeout(() => setCopiedField(null), 1500);
+    return () => window.clearTimeout(timeout);
+  }, [copiedField]);
 
   if (isPending) {
     return <div className="text-muted-foreground p-6">Loading…</div>;
@@ -59,28 +70,61 @@ export default function ApiCredentialDetailPage({
           </CardHeader>
           <CardContent className="divide-y px-6 pt-0 pb-4">
             <Row label="Name" value={apiKey.name} />
-            <Row label="Key" value={apiKey.key} />
+            <Row
+              label="Key"
+              value={
+                <div className="flex items-center justify-end gap-2">
+                  <span className="font-medium">{apiKey.key}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => copyValue("key", apiKey.key)}
+                    aria-label="Copy API key"
+                  >
+                    {copiedField === "key" ? (
+                      <Check className="size-4" />
+                    ) : (
+                      <Copy className="size-4" />
+                    )}
+                  </Button>
+                </div>
+              }
+            />
             <Row
               label="Secret"
               value={
-                <button
-                  type="button"
-                  className="text-left font-medium underline decoration-dashed underline-offset-4"
-                  onClick={() => setRevealSecret((current) => !current)}
-                >
-                  <span className="flex items-center gap-2">
-                    {revealSecret ? apiKey.secret : hiddenSecret}
-                    {revealSecret ? (
-                      <EyeOff className="size-4" />
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    className="text-left font-medium underline decoration-dashed underline-offset-4"
+                    onClick={() => setRevealSecret((current) => !current)}
+                  >
+                    <span className="flex items-center gap-2">
+                      {revealSecret ? apiKey.secret : hiddenSecret}
+                      {revealSecret ? (
+                        <EyeOff className="size-4" />
+                      ) : (
+                        <Eye className="size-4" />
+                      )}
+                    </span>
+                  </button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => copyValue("secret", apiKey.secret)}
+                    aria-label="Copy API secret"
+                  >
+                    {copiedField === "secret" ? (
+                      <Check className="size-4" />
                     ) : (
-                      <Eye className="size-4" />
+                      <Copy className="size-4" />
                     )}
-                  </span>
-                </button>
+                  </Button>
+                </div>
               }
             />
-            <Row label="Tenant ID" value={apiKey.tenantId} />
-            <Row label="Drive ID" value={apiKey.gDriveId} />
             <Row label="Created at" value={formatDate(apiKey.createdAt)} />
             <Row label="Updated at" value={formatDate(apiKey.updatedAt)} />
           </CardContent>

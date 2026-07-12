@@ -1,5 +1,6 @@
-import type * as tenantTypes from "@/types/domain/tenant";
+import type * as mediaTypes from "@/types/domain/system/media";
 import { VerifyTokenResponse } from "@/types/domain/token";
+import type * as tenantTypes from "@/types/domain/tenant";
 import { API_ENDPOINTS } from "@/lib/api-endpoints";
 import { ApiFunctionProps } from "@/types/api";
 import { request } from ".";
@@ -77,7 +78,7 @@ export const TenantAPI = {
     create: (props: ApiFunctionProps<tenantTypes.CreateApiCredentialPayload>) =>
       request<tenantTypes.CreateApiCredentialResponse>({
         method: "POST",
-        endpoint: endpoints.apiCredential.list,
+        endpoint: endpoints.apiCredential.create,
         ...props
       }),
     update: (props: ApiFunctionProps<tenantTypes.UpdateApiCredentialPayload>) =>
@@ -90,6 +91,46 @@ export const TenantAPI = {
       request<tenantTypes.DeleteApiCredentialResponse>({
         method: "DELETE",
         endpoint: endpoints.apiCredential.get(props.payload.id),
+        ...props
+      })
+  },
+  media: {
+    list: (props: ApiFunctionProps) =>
+      request<mediaTypes.ListMediaResponse>({
+        method: "GET",
+        endpoint: endpoints.media.list,
+        ...props
+      }),
+    get: (props: ApiFunctionProps<{ id: string }>) =>
+      request<mediaTypes.GetMediaResponse>({
+        method: "GET",
+        endpoint: endpoints.media.get(props.payload.id),
+        ...props
+      }),
+    update: (props: ApiFunctionProps<mediaTypes.UpdateMediaPayload>) =>
+      request<mediaTypes.UpdateMediaResponse>({
+        method: "PUT",
+        endpoint: endpoints.media.update(props.payload.id),
+        ...props
+      }),
+    delete: (props: ApiFunctionProps<{ id: string }>) =>
+      request<mediaTypes.DeleteMediaResponse>({
+        method: "DELETE",
+        endpoint: endpoints.media.delete(props.payload.id),
+        ...props
+      }),
+    initUpload: async (props: ApiFunctionProps<mediaTypes.InitUploadPayload>) =>
+      request<mediaTypes.InitUploadResponse>({
+        method: "POST",
+        endpoint: endpoints.media.initUpload,
+        ...props
+      }),
+    completeUpload: async (
+      props: ApiFunctionProps<mediaTypes.CompleteUploadPayload>
+    ) =>
+      request<mediaTypes.CompleteUploadResponse>({
+        method: "POST",
+        endpoint: endpoints.media.completeUpload,
         ...props
       })
   }

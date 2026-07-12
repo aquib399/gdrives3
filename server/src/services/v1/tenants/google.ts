@@ -68,7 +68,7 @@ export const handleCallback: serviceFunction<
         tenantId,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
-        expiryDate: tokens.expiry_date
+        expiry: tokens.expiry_date
       },
       { upsert: true, returnDocument: "after" }
     ).lean();

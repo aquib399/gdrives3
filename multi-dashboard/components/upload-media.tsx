@@ -1,10 +1,10 @@
+import { useEffect, useRef, useState, useCallback } from "react";
 import * as mediaTypes from "@/types/domain/system/media";
 import { Progress } from "@/components/ui/progress";
-import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { SystemAPI } from "@/api/system";
+import { TenantAPI } from "@/api/tenant";
 import { cn } from "@/lib/utils";
 import {
   X,
@@ -74,7 +74,7 @@ function useDragAndDrop(
   return { dragStatus, setDragStatus, handleDrop };
 }
 
-function useMultipartUpload(
+function useDriveUpload(
   acceptMimeTypes: mediaTypes.MimeType[],
   onSuccess?: (media: mediaTypes.IMedia) => void,
   onError?: (err: any) => void,
@@ -122,13 +122,14 @@ function useMultipartUpload(
     setTimeRemaining("");
 
     try {
+      // 1. Initialize the upload with your backend to get the Google Drive URL
       const initPayload: mediaTypes.InitUploadPayload = {
         fileName: file.name,
         mimeType: file.type as any,
         sizeInBytes: file.size
       };
 
-      const { data: initData } = await SystemAPI.media.initUpload({
+      const { data: initData } = await TenantAPI.media.initUpload({
         payload: initPayload,
         forceReturn: true,
         toastConfig: { error: { enabled: true } }
@@ -139,75 +140,59 @@ function useMultipartUpload(
       if (!initData.data)
         throw new Error("No data returned from upload initialization.");
 
-      const { config, media } = initData.data;
-      const { uploadId, partSize, urls } = config;
-
-      const totalParts = urls.length;
-      let uploadedChunks = 0;
-      let uploadedBytes = 0;
+      const { uploadUrl, media } = initData.data;
       const uploadStartTime = Date.now();
 
-      const executeChunk = async (url: string, index: number) => {
-        const start = index * Number(partSize);
-        const end = Math.min(start + Number(partSize), file.size);
-        const chunk = file.slice(start, end);
+      // 2. Upload directly to Google Drive via XMLHttpRequest to track progress
+      const googleFileId = await new Promise<string>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl, true);
+        xhr.setRequestHeader("Content-Type", file.type);
 
-        const s3Response = await fetch(url, {
-          method: "PUT",
-          body: chunk
-        });
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const uploadedBytes = event.loaded;
+            const totalBytes = event.total;
 
-        if (!s3Response.ok) throw new Error(`Chunk ${index + 1} failed`);
-        const etag = s3Response.headers.get("ETag");
-        if (!etag) throw new Error("S3 ETag missing - check CORS");
+            const elapsedSec = (Date.now() - uploadStartTime) / 1000;
+            const bps = elapsedSec > 0 ? uploadedBytes / elapsedSec : 0;
+            const remainingBytes = totalBytes - uploadedBytes;
+            const etaSec = bps > 0 ? remainingBytes / bps : Infinity;
 
-        uploadedBytes += end - start;
-        const elapsedSec = (Date.now() - uploadStartTime) / 1000;
-        const bps = elapsedSec > 0 ? uploadedBytes / elapsedSec : 0;
-        const remainingBytes = file.size - uploadedBytes;
-        const etaSec = bps > 0 ? remainingBytes / bps : Infinity;
+            setUploadSpeed(formatSpeed(bps));
+            setTimeRemaining(formatTimeRemaining(etaSec));
 
-        setUploadSpeed(formatSpeed(bps));
-        setTimeRemaining(formatTimeRemaining(etaSec));
-
-        uploadedChunks++;
-        const pct = Math.round((uploadedChunks / totalParts) * 100);
-        setProgress(pct);
-        onProgress?.(pct);
-
-        return {
-          ETag: etag.replace(/"/g, ""),
-          PartNumber: index + 1
+            const pct = Math.round((uploadedBytes / totalBytes) * 100);
+            setProgress(pct);
+            onProgress?.(pct);
+          }
         };
-      };
 
-      // Concurrency limit of 4 to prevent network choking
-      const CONCURRENCY_LIMIT = 4;
-      const partPromises: Promise<{ ETag: string; PartNumber: number }>[] = [];
-      const executing = new Set<Promise<any>>();
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              if (response.id) resolve(response.id);
+              else reject(new Error("Google Drive did not return a file ID."));
+            } catch (e) {
+              reject(new Error("Failed to parse Google Drive response."));
+            }
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        };
 
-      for (let i = 0; i < urls.length; i++) {
-        const p = executeChunk(urls[i], i).then((res) => {
-          executing.delete(p);
-          return res;
-        });
-        executing.add(p);
-        partPromises.push(p);
+        xhr.onerror = () => reject(new Error("Network error during upload."));
+        xhr.send(file);
+      });
 
-        if (executing.size >= CONCURRENCY_LIMIT) {
-          await Promise.race(executing);
-        }
-      }
-
-      const parts = await Promise.all(partPromises);
-
+      // 3. Complete the upload by sending the Drive File ID back to the backend
       const completePayload: mediaTypes.CompleteUploadPayload = {
-        mediaId: (media as any).id || (media as any)._id,
-        uploadId,
-        parts
+        mediaId: media._id,
+        gdriveFileId: googleFileId
       };
 
-      const completeResponse = await SystemAPI.media.completeUpload({
+      const completeResponse = await TenantAPI.media.completeUpload({
         payload: completePayload,
         forceReturn: true,
         toastConfig: { error: { enabled: true } }
@@ -219,15 +204,11 @@ function useMultipartUpload(
         );
       }
 
-      const completeMedia = completeResponse.data.data;
+      const completeMedia = completeResponse.data.data?.media;
       if (!completeMedia)
         throw new Error("No media data returned after completing upload.");
 
       onSuccess?.(completeMedia);
-
-      if (disablePreview && clearFileCb) {
-        clearFileCb();
-      }
     } catch (err) {
       onError?.(err);
     } finally {
@@ -283,7 +264,7 @@ export function MediaUploader({
     timeRemaining,
     uploadFile,
     resetState
-  } = useMultipartUpload(
+  } = useDriveUpload(
     acceptMimeTypes,
     onSuccess,
     onError,

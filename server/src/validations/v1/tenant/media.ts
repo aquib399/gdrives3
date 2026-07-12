@@ -26,13 +26,7 @@ export const initUpload = validate(
 
 const completeUploadSchema = z.object({
   mediaId: objectIdSchema,
-  uploadId: z.string(),
-  parts: z.array(
-    z.object({
-      ETag: z.string(),
-      PartNumber: z.number().int().positive()
-    })
-  )
+  gdriveFileId: z.string().min(1)
 });
 
 export type CompleteUploadPayload = z.infer<typeof completeUploadSchema>;
@@ -40,5 +34,18 @@ export type CompleteUploadPayload = z.infer<typeof completeUploadSchema>;
 export const completeUpload = validate(
   z.object({
     body: completeUploadSchema.strict()
+  })
+);
+
+const updateMediaSchema = z.object({
+  fileName: z.string().min(1).optional()
+});
+
+export type UpdateMediaPayload = z.infer<typeof updateMediaSchema>;
+
+export const updateMedia = validate(
+  z.object({
+    params: z.object({ id: objectIdSchema }),
+    body: updateMediaSchema.strict()
   })
 );

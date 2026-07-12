@@ -19,13 +19,7 @@ export type InitUploadPayload = z.infer<typeof initUploadSchema>;
 
 const completeUploadSchema = z.object({
   mediaId: objectIdSchema,
-  uploadId: z.string(),
-  parts: z.array(
-    z.object({
-      ETag: z.string(),
-      PartNumber: z.number().int().positive()
-    })
-  )
+  gdriveFileId: z.string().min(1)
 });
 
 export type CompleteUploadPayload = z.infer<typeof completeUploadSchema>;

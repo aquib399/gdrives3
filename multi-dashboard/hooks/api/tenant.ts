@@ -185,3 +185,72 @@ export const useDeleteApiCredential = () => {
     }
   });
 };
+
+export const useMediaList = (props: HookProps<typeof TenantAPI.media.list>) => {
+  return useInfiniteQuery({
+    queryKey: ["tenant", "list", "media", props?.queryParams],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) =>
+      TenantAPI.media
+        .list({
+          ...buildApiFunctionProps({ props, pageParam }),
+          forceReturn: false
+        })
+        .then((res) => res.data),
+
+    getNextPageParam: getNextPageParam,
+    select: mergeInfinitePaginatedResponse
+  });
+};
+
+export const useMedia = (props: HookProps<typeof TenantAPI.media.get>) => {
+  const id = props?.payload?.id;
+  return useQuery({
+    queryKey: ["tenant", "media", id],
+    queryFn: async () =>
+      TenantAPI.media
+        .get({ ...buildApiFunctionProps({ props }), forceReturn: false })
+        .then((res) => res.data),
+    enabled: !!id
+  });
+};
+
+export const useUpdateMedia = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { id: string; fileName?: string }) =>
+      TenantAPI.media
+        .update({
+          payload,
+          forceReturn: true,
+          toastConfig: { success: { enabled: true }, error: { enabled: true } }
+        })
+        .then((res) => res.data),
+    onSuccess: (_data, payload) => {
+      queryClient.invalidateQueries({ queryKey: ["tenant", "list", "media"] });
+      queryClient.invalidateQueries({
+        queryKey: ["tenant", "media", payload.id]
+      });
+    }
+  });
+};
+
+export const useDeleteMedia = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { id: string }) =>
+      TenantAPI.media
+        .delete({
+          payload,
+          forceReturn: true,
+          toastConfig: { success: { enabled: true }, error: { enabled: true } }
+        })
+        .then((res) => res.data),
+    onSuccess: (_data, payload) => {
+      queryClient.invalidateQueries({ queryKey: ["tenant", "list", "media"] });
+      queryClient.invalidateQueries({
+        queryKey: ["tenant", "media", payload.id]
+      });
+    }
+  });
+};

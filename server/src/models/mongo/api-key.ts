@@ -4,7 +4,6 @@ import { Models } from "../names.js";
 
 export interface IApiKey extends BaseEntity {
   tenantId: Types.ObjectId;
-  gDriveId: Types.ObjectId;
   key: string;
   secret: string;
   name: string;
@@ -18,11 +17,6 @@ const ApiKeySchema = new Schema<IApiKey>(
     tenantId: {
       type: Schema.Types.ObjectId,
       ref: Models.Tenant.ref,
-      required: true
-    },
-    gDriveId: {
-      type: Schema.Types.ObjectId,
-      ref: Models.GDrive.ref,
       required: true
     },
     key: { type: String, required: true, unique: true },

@@ -41,13 +41,32 @@ class GoogleClient {
     return { tokens };
   }
 
-  getTenantDriveClient(accessToken: string, refreshToken?: string) {
-    const client = this.createOAuth2Client(this.options);
+  getTenantAuthClient(credentials: {
+    access_token: string;
+    refresh_token?: string;
+    expiry_date?: number;
+  }) {
+    const client = new google.auth.OAuth2(
+      GOOGLE_CONFIG.CLIENT_ID,
+      GOOGLE_CONFIG.CLIENT_SECRET,
+      GOOGLE_CONFIG.REDIRECT_URI
+    );
 
-    client.setCredentials({
-      access_token: accessToken,
-      refresh_token: refreshToken
-    });
+    client.setCredentials(credentials);
+    return client;
+  }
+
+  getTenantDriveClient(
+    credentials: {
+      access_token: string;
+      refresh_token?: string;
+      expiry_date?: number;
+    },
+    onTokenRefresh?: (newTokens: any) => void
+  ) {
+    const client = this.getTenantAuthClient(credentials);
+
+    if (onTokenRefresh) client.on("tokens", (tokens) => onTokenRefresh(tokens));
 
     return google.drive({ version: "v3", auth: client });
   }

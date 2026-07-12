@@ -12,6 +12,7 @@ export interface IMedia extends BaseEntity {
   fileName: string;
   fullUrl: string;
   mimeType: string;
+  gdriveFileId?: string;
   sizeInBytes: number;
   tenantId: Types.ObjectId;
   uploadingStatus: MediaUploadingStatus;
@@ -25,6 +26,7 @@ const MediaSchema = new Schema<IMedia>(
     fullUrl: { type: String, required: true },
     tenantId: { type: Types.ObjectId, required: true, ref: Models.Tenant.ref },
     mimeType: { type: String, required: true },
+    gdriveFileId: { type: String, required: false },
     sizeInBytes: { type: Number, required: true },
     uploadingStatus: {
       type: String,
