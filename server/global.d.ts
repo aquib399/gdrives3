@@ -6,6 +6,7 @@ declare global {
     role?: Role; // admin, tenant
     connectionId?: string; // socket id / sseId
     exp?: number; // expiry timestamp of the jwt.exp
+    apiKey?: any;
   }
 
   type routerFunction<Body = any, Param = any, Query = any> = (

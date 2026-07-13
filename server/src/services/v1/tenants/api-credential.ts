@@ -105,7 +105,7 @@ export const getApiCredential: serviceFunction<
 
 export type CreateApiCredentialPayload = {
   tenantId: string;
-  data: { name: string };
+  data: { name: string; folderName: string };
 };
 export type CreateApiCredentialResponse = { apiKey: IApiKey };
 
@@ -122,11 +122,13 @@ export const createApiCredential: serviceFunction<
   }
 
   const name = data.name.trim();
+  const folderName = data.folderName.trim();
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const apiKey = new ApiKey({
       tenantId,
       name,
+      folderName,
       key: `ak_${crypto.randomBytes(16).toString("hex")}`,
       secret: `sk_${crypto.randomBytes(32).toString("hex")}`,
       isActive: true
@@ -156,7 +158,7 @@ export const createApiCredential: serviceFunction<
 
 export type UpdateApiCredentialPayload = {
   id: string;
-  data: { name?: string; isActive?: boolean };
+  data: { name?: string; folderName?: string; isActive?: boolean };
 };
 export type UpdateApiCredentialResponse = { apiKey: IApiKey };
 
@@ -166,6 +168,9 @@ export const updateApiCredential: serviceFunction<
 > = async ({ id, data }) => {
   const updateData = {
     ...(data.name !== undefined ? { name: data.name.trim() } : {}),
+    ...(data.folderName !== undefined
+      ? { folderName: data.folderName.trim() }
+      : {}),
     ...(data.isActive !== undefined ? { isActive: data.isActive } : {})
   };
 

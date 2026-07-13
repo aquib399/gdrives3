@@ -15,6 +15,10 @@ const columns: ColumnDef<IApiKey>[] = [
     accessorKey: "name"
   },
   {
+    header: "Folder Name",
+    accessorKey: "folderName"
+  },
+  {
     header: "Active",
     accessorKey: "isActive",
     variant: "badge",

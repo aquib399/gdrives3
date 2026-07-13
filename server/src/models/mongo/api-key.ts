@@ -7,6 +7,7 @@ export interface IApiKey extends BaseEntity {
   key: string;
   secret: string;
   name: string;
+  folderName: string;
   isActive: boolean;
 }
 
@@ -22,6 +23,7 @@ const ApiKeySchema = new Schema<IApiKey>(
     key: { type: String, required: true, unique: true },
     secret: { type: String, required: true },
     name: { type: String, default: "Default Key" },
+    folderName: { type: String, default: "" },
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now }
   },

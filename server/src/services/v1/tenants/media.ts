@@ -199,6 +199,7 @@ export const deleteMedia: serviceFunction<
 type InitUploadPayload = {
   payload: validation.InitUploadPayload;
   tenantId: string;
+  folderName?: string;
 };
 
 type InitUploadResponse = {
@@ -206,11 +207,39 @@ type InitUploadResponse = {
   media: IMedia;
 };
 
+async function getOrCreateFolder(
+  drive: any,
+  folderName: string
+): Promise<string> {
+  const response = await drive.files.list({
+    q: `name = '${folderName.replace(/'/g, "\\'")}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+    fields: "files(id)",
+    spaces: "drive"
+  });
+
+  const files = response.data.files || [];
+  if (files.length > 0) {
+    return files[0].id;
+  }
+
+  const fileMetadata = {
+    name: folderName,
+    mimeType: "application/vnd.google-apps.folder"
+  };
+
+  const folder = await drive.files.create({
+    requestBody: fileMetadata,
+    fields: "id"
+  });
+
+  return folder.data.id;
+}
+
 export const initUpload: serviceFunction<
   InitUploadPayload,
   InitUploadResponse
 > = async (props) => {
-  const { payload, tenantId } = props;
+  const { payload, tenantId, folderName } = props;
 
   const gDrive = await GDrive.findOne({ tenantId });
   if (!gDrive) {
@@ -242,6 +271,21 @@ export const initUpload: serviceFunction<
       );
     });
 
+    let parents: string[] | undefined = undefined;
+    if (folderName) {
+      try {
+        const drive = googleClient.getTenantDriveClient({
+          access_token: gDrive.accessToken,
+          refresh_token: gDrive.refreshToken,
+          expiry_date: gDrive.expiry
+        });
+        const folderId = await getOrCreateFolder(drive, folderName);
+        parents = [folderId];
+      } catch (err) {
+        console.error("Failed to get/create parent folder:", err);
+      }
+    }
+
     const authHeaders = await authClient.getRequestHeaders();
 
     const headers = new Headers(authHeaders);
@@ -256,7 +300,8 @@ export const initUpload: serviceFunction<
         method: "POST",
         headers,
         body: JSON.stringify({
-          name: payload.fileName
+          name: payload.fileName,
+          ...(parents && { parents })
         })
       }
     );
@@ -277,7 +322,9 @@ export const initUpload: serviceFunction<
     const media = await Media.create({
       tenantId,
       fileName: payload.fileName,
-      fullUrl: `https://drive.google.com/uc?export=download&id=PENDING`,
+      fullUrl: `https://drive.google.com/file/d/PENDING/preview`,
+      driveUrl: `https://drive.google.com/file/d/PENDING/preview`,
+      previewUrl: `https://lh3.googleusercontent.com/d/PENDING`,
       mimeType: payload.mimeType,
       sizeInBytes: payload.sizeInBytes,
       uploadingStatus: MediaUploadingStatus.UPLOADING
@@ -332,8 +379,45 @@ export const completeUpload: serviceFunction<
     };
   }
 
+  try {
+    const gDrive = await GDrive.findOne({ tenantId });
+    if (gDrive) {
+      const drive = googleClient.getTenantDriveClient(
+        {
+          access_token: gDrive.accessToken,
+          refresh_token: gDrive.refreshToken,
+          expiry_date: gDrive.expiry
+        },
+        async (newTokens) => {
+          await GDrive.findOneAndUpdate(
+            { tenantId },
+            {
+              accessToken: newTokens.access_token,
+              expiry: newTokens.expiry_date,
+              ...(newTokens.refresh_token && {
+                refreshToken: newTokens.refresh_token
+              })
+            }
+          );
+        }
+      );
+
+      await drive.permissions.create({
+        fileId: gdriveFileId,
+        requestBody: {
+          role: "reader",
+          type: "anyone"
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Failed to make Google Drive file public:", error);
+  }
+
   mediaDoc.gdriveFileId = gdriveFileId;
-  mediaDoc.fullUrl = `https://drive.google.com/uc?export=download&id=${gdriveFileId}`;
+  mediaDoc.driveUrl = `https://drive.google.com/file/d/${gdriveFileId}/preview`;
+  mediaDoc.previewUrl = `https://lh3.googleusercontent.com/d/${gdriveFileId}`;
+  mediaDoc.fullUrl = `https://drive.google.com/file/d/${gdriveFileId}/preview`;
   mediaDoc.uploadingStatus = MediaUploadingStatus.COMPLETED;
 
   await mediaDoc.save();

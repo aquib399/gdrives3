@@ -14,15 +14,20 @@ export function CreateApiCredentialButton() {
   const createApiCredential = useCreateApiCredential();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [folderName, setFolderName] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const response = await createApiCredential.mutateAsync({ name });
+    const response = await createApiCredential.mutateAsync({
+      name,
+      folderName
+    });
     const id = response.data?.apiKey?._id;
 
     setOpen(false);
     setName("");
+    setFolderName("");
 
     if (id) {
       router.push(`/tenant/credentials/${id}`);
@@ -49,6 +54,14 @@ export function CreateApiCredentialButton() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Billing integration"
+          />
+
+          <Field
+            name="folderName"
+            label="Google Drive Folder Name"
+            value={folderName}
+            onChange={(e) => setFolderName(e.target.value)}
+            placeholder="e.g. billing_uploads"
           />
 
           <div className="flex justify-end gap-2 pt-2">

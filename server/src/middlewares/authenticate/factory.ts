@@ -1,6 +1,7 @@
 import { getCookies, getCookieSetting } from "@/utils/cookies.js";
 import { Request, Response, NextFunction } from "express";
 import { BaseTokenPayload } from "@/types/token.js";
+import { ApiKey } from "@/models/mongo/api-key.js";
 
 type VerifyFn = (token: string) => Promise<BaseTokenPayload | false>;
 type CreateFn = (payload: BaseTokenPayload) => Promise<string>;
@@ -65,6 +66,32 @@ export function createAuthMiddleware(config: AuthConfig) {
 
     const accessToken = headerAccessToken || cookieAccessToken;
     const refreshToken = headerRefreshToken || cookieRefreshToken;
+
+    const apiKeyHeader = headers["x-api-key"];
+    const apiSecretHeader = headers["x-api-secret"];
+
+    if (!accessToken && !refreshToken && apiKeyHeader && apiSecretHeader) {
+      try {
+        const apiKey = await ApiKey.findOne({
+          key: String(apiKeyHeader),
+          secret: String(apiSecretHeader),
+          isActive: true
+        });
+
+        if (apiKey) {
+          res.locals.id = String(apiKey.tenantId);
+          res.locals.role = "tenant";
+          res.locals.apiKey = apiKey;
+          return next();
+        }
+      } catch (error) {
+        console.error("API Key verification error:", error);
+      }
+      return res.status(401).json({
+        error: true,
+        message: "Invalid or inactive API credentials"
+      });
+    }
 
     if (!accessToken && !refreshToken) {
       return res.status(401).json({

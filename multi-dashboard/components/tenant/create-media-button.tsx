@@ -24,7 +24,7 @@ export function CreateMediaButton() {
         <MediaUploader
           onSuccess={async (media) => {
             setOpen(false);
-            await queryClient.invalidateQueries({
+            queryClient.invalidateQueries({
               queryKey: ["tenant", "list", "media"]
             });
             router.push(`/tenant/files/${media._id}`);

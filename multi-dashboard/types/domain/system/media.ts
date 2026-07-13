@@ -104,6 +104,8 @@ export enum MediaUploadingStatus {
 export interface IMedia extends BaseEntity {
   fileName: string;
   fullUrl: string;
+  driveUrl: string;
+  previewUrl: string;
   mimeType: MimeType;
   gdriveFileId?: string;
   sizeInBytes: number;

@@ -6,16 +6,19 @@ export interface IApiKey extends BaseEntity {
   key: string;
   secret: string;
   name: string;
+  folderName: string;
   isActive: boolean;
 }
 
 export interface CreateApiCredentialPayload {
   name: string;
+  folderName: string;
 }
 
 export interface UpdateApiCredentialPayload {
   id: string;
   name?: string;
+  folderName?: string;
   isActive?: boolean;
 }
 

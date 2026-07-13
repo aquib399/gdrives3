@@ -70,6 +70,7 @@ export default function ApiCredentialDetailPage() {
           </CardHeader>
           <CardContent className="divide-y px-6 pt-0 pb-4">
             <Row label="Name" value={apiKey.name} />
+            <Row label="Folder Name" value={apiKey.folderName} />
             <Row
               label="Key"
               value={

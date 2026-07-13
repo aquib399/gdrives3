@@ -8,7 +8,7 @@ const router = Router();
 router.all("/health", base.healthCheck);
 
 router.get("/", controller.listMedia);
-router.get("/:id", controller.getMedia);
+router.get("/:id", validation.singleMedia, controller.getMedia);
 
 /* /system/v1/media/init */
 router.post("/init", validation.initUpload, controller.initUpload);
@@ -17,6 +17,6 @@ router.post("/init", validation.initUpload, controller.initUpload);
 router.post("/complete", validation.completeUpload, controller.completeUpload);
 
 router.put("/:id", validation.updateMedia, controller.updateMedia);
-router.delete("/:id", controller.deleteMedia);
+router.delete("/:id", validation.singleMedia, controller.deleteMedia);
 
 export default router;

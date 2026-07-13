@@ -1,16 +1,15 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-
-import { useMedia } from "@/hooks/api/tenant";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RenderMedia } from "@/components/render-media";
+import { Button } from "@/components/ui/button";
+import { useMedia } from "@/hooks/api/tenant";
 import { Row } from "@/components/detail-row";
 import { Badge } from "@/components/ui/badge";
+import { useParams } from "next/navigation";
 import { formatDate } from "@/lib/utils";
-import { RenderMedia } from "@/components/render-media";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function MediaDetailPage() {
   const params = useParams();

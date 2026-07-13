@@ -1,7 +1,7 @@
 "use client";
 
-import { Modal, ModalContent, ModalTrigger } from "./modal";
 import { IMedia, MimeType } from "@/types/domain/system/media";
+import { Modal, ModalContent, ModalTrigger } from "./modal";
 import { cn } from "@/lib/utils";
 import {
   FileText,
@@ -101,6 +101,8 @@ export function RenderMedia(props: RenderMediaProps) {
   let m: {
     mimeType: string;
     fullUrl: string;
+    driveUrl: string;
+    previewUrl: string;
     fileName: string;
   };
 
@@ -124,12 +126,16 @@ export function RenderMedia(props: RenderMediaProps) {
     m = {
       mimeType: media.mimeType,
       fullUrl: media.fullUrl,
+      driveUrl: media.driveUrl || media.fullUrl,
+      previewUrl: media.previewUrl || media.fullUrl,
       fileName: media.fileName || "file"
     };
   } else {
     m = {
       mimeType: props.fullUrlMimeType?.toString() || "application/octet-stream",
       fullUrl: props.fullUrl,
+      driveUrl: props.fullUrl,
+      previewUrl: props.fullUrl,
       fileName: props.fullUrl.split("/").pop() || "file"
     };
   }
@@ -141,7 +147,7 @@ export function RenderMedia(props: RenderMediaProps) {
   if (variant === "inline") {
     return (
       <a
-        href={m.fullUrl}
+        href={m.driveUrl}
         target="_blank"
         rel="noreferrer"
         className={cn(
@@ -179,7 +185,7 @@ export function RenderMedia(props: RenderMediaProps) {
               )}
             >
               <img
-                src={m.fullUrl}
+                src={m.previewUrl}
                 alt={m.fileName}
                 {...imgProps}
                 className={cn("h-full w-full", fitClass, imageClassName)}
@@ -193,7 +199,7 @@ export function RenderMedia(props: RenderMediaProps) {
           </ModalTrigger>
           <ModalContent className="flex justify-center border-none bg-transparent shadow-none">
             <img
-              src={m.fullUrl}
+              src={m.previewUrl}
               alt={m.fileName}
               className="max-h-[85vh] max-w-full rounded-lg object-contain"
             />
@@ -201,7 +207,6 @@ export function RenderMedia(props: RenderMediaProps) {
         </Modal>
       );
 
-    // With this:
     case "video":
       return (
         <Modal>
@@ -213,10 +218,10 @@ export function RenderMedia(props: RenderMediaProps) {
                 className
               )}
             >
-              <video
-                src={m.fullUrl}
-                {...videoProps}
-                className={cn("h-full w-full", fitClass, videoClassName)}
+              <img
+                src={m.previewUrl}
+                alt={m.fileName}
+                className={cn("h-full w-full", fitClass, imageClassName)}
               />
               <div className="pointer-events-none absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
                 <div className="flex h-7 w-7 items-center justify-center rounded bg-black/50 backdrop-blur-sm">
@@ -226,15 +231,15 @@ export function RenderMedia(props: RenderMediaProps) {
             </div>
           </ModalTrigger>
           <ModalContent className="flex justify-center border-none bg-transparent shadow-none">
-            <video
-              src={m.fullUrl}
-              controls
-              autoPlay
-              className="max-h-[85vh] max-w-full rounded-lg"
+            <iframe
+              src={m.driveUrl}
+              className="h-[75vh] w-[85vw] max-w-5xl rounded-lg border-none"
+              allow="autoplay"
             />
           </ModalContent>
         </Modal>
       );
+
     case "audio":
       return (
         <div
@@ -248,14 +253,50 @@ export function RenderMedia(props: RenderMediaProps) {
             <span className="truncate font-medium">{m.fileName}</span>
           </div>
 
-          <audio controls src={m.fullUrl} className="w-full" />
+          <iframe
+            src={m.driveUrl}
+            className="h-32 w-full rounded-lg border-none bg-black/5"
+            allow="autoplay"
+          />
         </div>
+      );
+
+    case "document":
+      return (
+        <Modal>
+          <ModalTrigger>
+            <div
+              className={cn(
+                "bg-muted group relative block cursor-pointer overflow-hidden rounded-xl border",
+                aspectRatio,
+                className
+              )}
+            >
+              <img
+                src={m.previewUrl}
+                alt={m.fileName}
+                className={cn("h-full w-full", fitClass, imageClassName)}
+              />
+              <div className="pointer-events-none absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="flex h-7 w-7 items-center justify-center rounded bg-black/50 backdrop-blur-sm">
+                  <Maximize className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </div>
+          </ModalTrigger>
+          <ModalContent className="flex justify-center border-none bg-transparent shadow-none">
+            <iframe
+              src={m.driveUrl}
+              className="h-[75vh] w-[85vw] max-w-5xl rounded-lg border-none"
+            />
+          </ModalContent>
+        </Modal>
       );
 
     default:
       return (
         <a
-          href={m.fullUrl}
+          href={m.driveUrl}
           target="_blank"
           rel="noreferrer"
           className={cn(

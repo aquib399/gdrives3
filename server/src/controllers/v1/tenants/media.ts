@@ -37,7 +37,12 @@ export const initUpload: routerFunction<validation.InitUploadPayload> = async (
 ) => {
   const payload = req.body;
   const tenantId = String(res.locals.id);
-  const { response, status } = await service.initUpload({ payload, tenantId });
+  const folderName = res.locals.apiKey?.folderName;
+  const { response, status } = await service.initUpload({
+    payload,
+    tenantId,
+    folderName
+  });
   return res.status(status).json(response);
 };
 

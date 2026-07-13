@@ -49,3 +49,9 @@ export const updateMedia = validate(
     body: updateMediaSchema.strict()
   })
 );
+
+export const singleMedia = validate(
+  z.object({
+    params: z.object({ id: objectIdSchema })
+  })
+);
