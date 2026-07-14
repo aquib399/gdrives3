@@ -37,11 +37,20 @@ export const initUpload: routerFunction<validation.InitUploadPayload> = async (
 ) => {
   const payload = req.body;
   const tenantId = String(res.locals.id);
-  const folderName = res.locals.apiKey?.folderName;
+  const apiKey = req.headers["x-api-key"] as string | undefined;
+
+  if (!apiKey) {
+    const error = createErrorResponse(
+      "Missing API key or secret in request headers",
+      null
+    );
+    return res.status(400).json(error);
+  }
+
   const { response, status } = await service.initUpload({
     payload,
     tenantId,
-    folderName
+    apiKey
   });
   return res.status(status).json(response);
 };

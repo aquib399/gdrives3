@@ -6,6 +6,11 @@ console.log("ORIGINS:", CORS_ORIGINS);
 export const corsConfig = cors({
   origin: CORS_ORIGINS,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  credentials: true
+  credentials: true,
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "x-api-key"
+  ]
 });

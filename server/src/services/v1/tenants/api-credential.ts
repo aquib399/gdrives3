@@ -129,8 +129,7 @@ export const createApiCredential: serviceFunction<
       tenantId,
       name,
       folderName,
-      key: `ak_${crypto.randomBytes(16).toString("hex")}`,
-      secret: `sk_${crypto.randomBytes(32).toString("hex")}`,
+      key: `sk_${crypto.randomBytes(16).toString("hex")}`,
       isActive: true
     });
 

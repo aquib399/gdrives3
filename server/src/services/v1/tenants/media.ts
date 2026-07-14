@@ -15,6 +15,7 @@ import {
 import type * as validation from "@/validations/v1/tenant/media.js";
 import { PaginatedResponse } from "@/types/pagination.js";
 import { Types } from "mongoose";
+import { ApiKey } from "@/models/index.js";
 
 const RESOURCE = "media";
 
@@ -199,7 +200,7 @@ export const deleteMedia: serviceFunction<
 type InitUploadPayload = {
   payload: validation.InitUploadPayload;
   tenantId: string;
-  folderName?: string;
+  apiKey: string;
 };
 
 type InitUploadResponse = {
@@ -239,7 +240,7 @@ export const initUpload: serviceFunction<
   InitUploadPayload,
   InitUploadResponse
 > = async (props) => {
-  const { payload, tenantId, folderName } = props;
+  const { payload, tenantId, apiKey } = props;
 
   const gDrive = await GDrive.findOne({ tenantId });
   if (!gDrive) {
@@ -251,6 +252,21 @@ export const initUpload: serviceFunction<
       )
     };
   }
+
+  const credential = await ApiKey.findOne({
+    tenantId,
+    key: apiKey,
+    isActive: true
+  }).lean();
+
+  if (!credential) {
+    return {
+      status: 400,
+      response: createErrorResponse("Invalid API key or secret", null)
+    };
+  }
+
+  const folderName = credential.folderName || undefined;
 
   try {
     const authClient = googleClient.getTenantAuthClient({

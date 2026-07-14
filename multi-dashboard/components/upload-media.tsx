@@ -74,14 +74,25 @@ function useDragAndDrop(
   return { dragStatus, setDragStatus, handleDrop };
 }
 
-function useDriveUpload(
-  acceptMimeTypes: mediaTypes.MimeType[],
-  onSuccess?: (media: mediaTypes.IMedia) => void,
-  onError?: (err: any) => void,
-  onProgress?: (pct: number) => void,
-  disablePreview?: boolean,
-  clearFileCb?: () => void
-) {
+function useDriveUpload(props: {
+  acceptMimeTypes: mediaTypes.MimeType[];
+  onSuccess?: (media: mediaTypes.IMedia) => void;
+  onError?: (err: any) => void;
+  onProgress?: (pct: number) => void;
+  disablePreview?: boolean;
+  clearFileCb?: () => void;
+  apiKey: string;
+}) {
+  const {
+    acceptMimeTypes,
+    onSuccess,
+    apiKey,
+    clearFileCb,
+    disablePreview,
+    onError,
+    onProgress
+  } = props;
+
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploadSpeed, setUploadSpeed] = useState("");
@@ -132,7 +143,10 @@ function useDriveUpload(
       const { data: initData } = await TenantAPI.media.initUpload({
         payload: initPayload,
         forceReturn: true,
-        toastConfig: { error: { enabled: true } }
+        toastConfig: { error: { enabled: true } },
+        headers: {
+          "x-api-key": apiKey
+        }
       });
 
       if (initData.error)
@@ -237,12 +251,14 @@ interface MediaUploaderProps {
   onProgress?: (pct: number) => void;
   acceptMimeTypes?: mediaTypes.MimeType[];
   disablePreview?: boolean;
+  apiKey: string;
 }
 
 export function MediaUploader({
   onSuccess,
   onError,
   onProgress,
+  apiKey,
   acceptMimeTypes = Object.values(mediaTypes.MimeType),
   disablePreview = false
 }: MediaUploaderProps) {
@@ -264,14 +280,15 @@ export function MediaUploader({
     timeRemaining,
     uploadFile,
     resetState
-  } = useDriveUpload(
+  } = useDriveUpload({
     acceptMimeTypes,
     onSuccess,
     onError,
     onProgress,
     disablePreview,
-    clearFile
-  );
+    apiKey,
+    clearFileCb: clearFile
+  });
 
   const handleFile = async (file: File) => {
     setFile(file);

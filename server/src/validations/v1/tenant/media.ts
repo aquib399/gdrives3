@@ -16,11 +16,18 @@ const initUploadSchema = z.object({
     .max(MAXIMUM_FILE_SIZE_BYTES)
 });
 
+const initUploadHeaderSchema = z.object({
+  "x-api-key": z
+    .string("Missing API key in request headers")
+    .min(1, "Missing API key in request headers")
+});
+
 export type InitUploadPayload = z.infer<typeof initUploadSchema>;
 
 export const initUpload = validate(
   z.object({
-    body: initUploadSchema.strict()
+    body: initUploadSchema.strict(),
+    headers: initUploadHeaderSchema
   })
 );
 

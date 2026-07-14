@@ -4,7 +4,6 @@ import { PaginatedResponse } from "@/types/pagination";
 export interface IApiKey extends BaseEntity {
   tenantId: string;
   key: string;
-  secret: string;
   name: string;
   folderName: string;
   isActive: boolean;
