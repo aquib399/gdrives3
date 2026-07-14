@@ -230,7 +230,10 @@ export const updateApiCredential: serviceFunction<
             refresh_token: gDrive.refreshToken,
             expiry_date: gDrive.expiry
           });
-          updateData.gDriveFolderId = await getOrCreateFolderForKey(drive, folderName);
+          updateData.gDriveFolderId = await getOrCreateFolderForKey(
+            drive,
+            folderName
+          );
         }
       } catch (err) {
         console.error("Failed to resolve GDrive folder on update:", err);

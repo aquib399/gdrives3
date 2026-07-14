@@ -13,7 +13,7 @@ const createApiCredentialSchema = z.object({
     .min(1, "Folder name is required")
     .refine(
       (val) => !INVALID_FOLDER_CHARS.test(val),
-      "Folder name contains invalid characters (\\, /, :, *, ?, \", <, >, |)"
+      'Folder name contains invalid characters (\\, /, :, *, ?, ", <, >, |)'
     )
 });
 export type CreateApiCredentialPayload = z.infer<
@@ -30,7 +30,7 @@ const updateApiCredentialSchema = z.object({
     .min(1, "Folder name is required")
     .refine(
       (val) => !INVALID_FOLDER_CHARS.test(val),
-      "Folder name contains invalid characters (\\, /, :, *, ?, \", <, >, |)"
+      'Folder name contains invalid characters (\\, /, :, *, ?, ", <, >, |)'
     )
     .optional(),
   isActive: z.boolean().optional()

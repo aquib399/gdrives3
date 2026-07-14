@@ -124,7 +124,7 @@ export const useCreateApiCredential = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: { name: string, folderName: string }) =>
+    mutationFn: (payload: { name: string; folderName: string }) =>
       TenantAPI.apiCredential
         .create({
           payload,
