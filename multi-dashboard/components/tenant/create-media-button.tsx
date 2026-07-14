@@ -1,7 +1,7 @@
 "use client";
 
 import { Modal, ModalContent, ModalTrigger } from "@/components/modal";
-import { MediaUploader } from "@/components/uploader";
+import { MediaUploader } from "@/components/upload-media";
 import { useApiCredentialList } from "@/hooks/api/tenant";
 import { IApiKey } from "@/types/domain/api-credential";
 import { useCallback, useMemo, useState } from "react";

@@ -10,6 +10,7 @@ import { ApiKey, type IApiKey } from "@/models/index.js";
 import { SchemaConfig } from "@/types/filter-config.js";
 import { googleClient } from "@/clients/google.js";
 import { buildCacheKey } from "@/utils/cache.js";
+import { performance } from "node:perf_hooks";
 import {
   createErrorResponse,
   createSuccessResponse
@@ -173,12 +174,14 @@ export const deleteMedia: serviceFunction<
     try {
       const gDrive = await GDrive.findOne({ tenantId });
       if (gDrive) {
-        const drive = googleClient.getTenantDriveClient({
-          access_token: gDrive.accessToken,
-          refresh_token: gDrive.refreshToken,
-          expiry_date: gDrive.expiry
+        await googleClient.deleteFile({
+          fileId: media.gdriveFileId,
+          tokens: {
+            access_token: gDrive.accessToken,
+            refresh_token: gDrive.refreshToken,
+            expiry_date: gDrive.expiry
+          }
         });
-        await drive.files.delete({ fileId: media.gdriveFileId });
       }
     } catch (error) {
       console.warn("Failed to delete remote media file:", error);
@@ -200,42 +203,13 @@ type InitUploadPayload = {
   payload: validation.InitUploadPayload;
   tenantId: string;
   apiKey: string;
+  origin: string;
 };
 
 type InitUploadResponse = {
   uploadUrl: string;
   media: IMedia;
 };
-
-async function getOrCreateFolder(
-  drive: any,
-  folderName: string
-): Promise<string> {
-  const response = await drive.files.list({
-    q: `name = '${folderName.replace(/'/g, "\\'")}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-    fields: "files(id)",
-    spaces: "drive"
-  });
-
-  const files = response.data.files || [];
-  if (files.length > 0) {
-    return files[0].id;
-  }
-
-  const fileMetadata = {
-    name: folderName,
-    mimeType: "application/vnd.google-apps.folder"
-  };
-
-  const folder = await drive.files.create({
-    requestBody: fileMetadata,
-    fields: "id"
-  });
-
-  return folder.data.id;
-}
-
-import { performance } from "node:perf_hooks";
 
 export const initUpload: serviceFunction<
   InitUploadPayload,
@@ -263,7 +237,7 @@ export const initUpload: serviceFunction<
     console.log("==============================\n");
   };
 
-  const { payload, tenantId, apiKey } = props;
+  const { payload, tenantId, apiKey, origin } = props;
 
   // Run both DB lookups in parallel with caching
   const gDriveKey = buildCacheKey({ resource: "gdrive", identifier: tenantId });
@@ -321,72 +295,37 @@ export const initUpload: serviceFunction<
     : undefined;
 
   try {
-    const authClient = googleClient.getTenantAuthClient({
-      access_token: gDrive.accessToken,
-      refresh_token: gDrive.refreshToken,
-      expiry_date: gDrive.expiry ?? 0
-    });
+    lap("Prepare and execute Google Upload");
 
-    // lap2
-    lap("Create Auth Client");
-
-    authClient.on("tokens", async (newTokens) => {
-      await GDrive.findOneAndUpdate(
-        { tenantId },
-        {
-          accessToken: newTokens.access_token,
-          expiry: newTokens.expiry_date,
-          ...(newTokens.refresh_token && {
-            refreshToken: newTokens.refresh_token
-          })
-        }
-      );
-
-      // Invalidate cached GDrive credentials after token refresh
-      void cacheClient.delete(gDriveKey);
-    });
-
-    const authHeaders = await authClient.getRequestHeaders();
-
-    // lap3
-    lap("Get Auth Headers");
-
-    const headers = new Headers(authHeaders);
-    headers.set("Content-Type", "application/json");
-    headers.set("X-Upload-Content-Type", payload.mimeType);
-    headers.set("X-Upload-Content-Length", payload.sizeInBytes.toString());
-
-    const googleResponse = await fetch(
-      "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id",
-      {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          name: payload.fileName,
-          ...(parents && { parents })
-        })
+    const { uploadUrl } = await googleClient.getUploadUrl({
+      origin,
+      payload: {
+        fileName: payload.fileName,
+        mimeType: payload.mimeType,
+        sizeInBytes: payload.sizeInBytes,
+        parents: parents
+      },
+      tokens: {
+        accessToken: gDrive.accessToken,
+        refreshToken: gDrive.refreshToken,
+        expiry: gDrive.expiry
+      },
+      onCredentialUpdate: async (newTokens) => {
+        await GDrive.findOneAndUpdate(
+          { tenantId },
+          {
+            accessToken: newTokens.access_token,
+            expiry: newTokens.expiry_date,
+            ...(newTokens.refresh_token && {
+              refreshToken: newTokens.refresh_token
+            })
+          }
+        );
+        void cacheClient.delete(gDriveKey);
       }
-    );
+    });
 
-    // lap4
-    lap("Google Upload Init");
-
-    const responseText = await googleResponse.text();
-    const json = responseText ? JSON.parse(responseText) : null;
-    const uploadUrl = googleResponse.headers.get("location");
-
-    // lap5
     lap("Read Google Response");
-
-    if (!googleResponse.ok) {
-      throw new Error(
-        `Google resumable upload init failed: ${googleResponse.status} ${googleResponse.statusText} ${JSON.stringify(json)}`
-      );
-    }
-
-    if (!uploadUrl) {
-      throw new Error("Location header missing from Google response");
-    }
 
     const media = await Media.create({
       tenantId,
@@ -454,42 +393,38 @@ export const completeUpload: serviceFunction<
       })
     };
   }
-
   try {
     const gDrive = await GDrive.findOne({ tenantId });
     if (gDrive) {
-      const drive = googleClient.getTenantDriveClient(
-        {
-          access_token: gDrive.accessToken,
-          refresh_token: gDrive.refreshToken,
-          expiry_date: gDrive.expiry
-        },
-        async (newTokens) => {
-          await GDrive.findOneAndUpdate(
-            { tenantId },
-            {
-              accessToken: newTokens.access_token,
-              expiry: newTokens.expiry_date,
-              ...(newTokens.refresh_token && {
-                refreshToken: newTokens.refresh_token
-              })
-            }
-          );
-        }
-      );
-
-      await drive.permissions.create({
-        fileId: gdriveFileId,
-        requestBody: {
-          role: "reader",
-          type: "anyone"
-        }
-      });
+      // Fire-and-forget: unblock the main thread
+      googleClient
+        .makeFilePublic({
+          fileId: gdriveFileId,
+          tokens: {
+            access_token: gDrive.accessToken,
+            refresh_token: gDrive.refreshToken,
+            expiry_date: gDrive.expiry
+          },
+          onTokenRefresh: async (newTokens) => {
+            await GDrive.findOneAndUpdate(
+              { tenantId },
+              {
+                accessToken: newTokens.access_token,
+                expiry: newTokens.expiry_date,
+                ...(newTokens.refresh_token && {
+                  refreshToken: newTokens.refresh_token
+                })
+              }
+            );
+          }
+        })
+        .catch((err) =>
+          console.error("Failed to make Google Drive file public async:", err)
+        );
     }
   } catch (error) {
-    console.error("Failed to make Google Drive file public:", error);
+    console.error("Failed to initiate public permission update:", error);
   }
-
   mediaDoc.gdriveFileId = gdriveFileId;
   mediaDoc.previewUrl = `https://lh3.googleusercontent.com/d/${gdriveFileId}`;
   mediaDoc.fullUrl = `https://drive.google.com/file/d/${gdriveFileId}/preview`;

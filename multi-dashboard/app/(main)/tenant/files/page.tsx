@@ -12,7 +12,15 @@ import { CreateMediaButton } from "@/components/tenant/create-media-button";
 const columns: ColumnDef<IMedia>[] = [
   {
     header: "File name",
-    accessorKey: "fileName"
+    accessorKey: "fileName",
+    Cell: ({ fileName }) => (
+      <p
+        className="truncate font-medium max-[1600px]:max-w-100"
+        title={fileName}
+      >
+        {fileName}
+      </p>
+    )
   },
   {
     header: "Type",

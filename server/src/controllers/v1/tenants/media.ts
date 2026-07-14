@@ -47,10 +47,15 @@ export const initUpload: routerFunction<validation.InitUploadPayload> = async (
     return res.status(400).json(error);
   }
 
+  const origin = req.headers.origin as string;
+
+  console.log("Origin header:", origin);
+
   const { response, status } = await service.initUpload({
     payload,
     tenantId,
-    apiKey
+    apiKey,
+    origin
   });
   return res.status(status).json(response);
 };
