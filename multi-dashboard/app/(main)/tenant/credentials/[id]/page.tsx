@@ -17,7 +17,7 @@ export default function ApiCredentialDetailPage() {
   const params = useParams();
   const id = String(params?.id);
   const { data, isPending } = useApiCredential({ payload: { id } });
-  const [revealSecret, setRevealSecret] = useState(false);
+  const [revealKey, setRevealKey] = useState(false);
   const [copiedField, setCopiedField] = useState<"key" | "secret" | null>(null);
   const apiKey = data?.data?.apiKey;
 
@@ -75,35 +75,14 @@ export default function ApiCredentialDetailPage() {
               label="Key"
               value={
                 <div className="flex items-center justify-end gap-2">
-                  <span className="font-medium">{apiKey.key}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => copyValue("key", apiKey.key)}
-                    aria-label="Copy API key"
-                  >
-                    {copiedField === "key" ? (
-                      <Check className="size-4" />
-                    ) : (
-                      <Copy className="size-4" />
-                    )}
-                  </Button>
-                </div>
-              }
-            />
-            <Row
-              label="Secret"
-              value={
-                <div className="flex items-center justify-end gap-2">
                   <button
                     type="button"
                     className="text-left font-medium underline decoration-dashed underline-offset-4"
-                    onClick={() => setRevealSecret((current) => !current)}
+                    onClick={() => setRevealKey((current) => !current)}
                   >
                     <span className="flex items-center gap-2">
-                      {revealSecret ? apiKey.secret : hiddenSecret}
-                      {revealSecret ? (
+                      {revealKey ? apiKey.key : hiddenSecret}
+                      {revealKey ? (
                         <EyeOff className="size-4" />
                       ) : (
                         <Eye className="size-4" />
@@ -114,10 +93,10 @@ export default function ApiCredentialDetailPage() {
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => copyValue("secret", apiKey.secret)}
-                    aria-label="Copy API secret"
+                    onClick={() => copyValue("key", apiKey.key)}
+                    aria-label="Copy API key"
                   >
-                    {copiedField === "secret" ? (
+                    {copiedField === "key" ? (
                       <Check className="size-4" />
                     ) : (
                       <Copy className="size-4" />

@@ -1,7 +1,6 @@
 import { cacheClient, cacheNameSpace } from "@/clients/index.js";
 import { googleClient } from "@/clients/google.js";
-import { ORIGINS } from "@/configs/env.js";
-import { GDrive } from "@/models/mongo/gdrive.js";
+import { GDrive, type IGDrive } from "@/models/mongo/gdrive.js";
 import { Media, IMedia, MediaUploadingStatus } from "@/models/mongo/media.js";
 import { SchemaConfig } from "@/types/filter-config.js";
 import { ListOptions } from "@/utils/query/list-option.js";
@@ -15,7 +14,7 @@ import {
 import type * as validation from "@/validations/v1/tenant/media.js";
 import { PaginatedResponse } from "@/types/pagination.js";
 import { Types } from "mongoose";
-import { ApiKey } from "@/models/index.js";
+import { ApiKey, type IApiKey } from "@/models/index.js";
 
 const RESOURCE = "media";
 
@@ -236,13 +235,69 @@ async function getOrCreateFolder(
   return folder.data.id;
 }
 
+import { performance } from "node:perf_hooks";
+
 export const initUpload: serviceFunction<
   InitUploadPayload,
   InitUploadResponse
 > = async (props) => {
+  // start performance
+  const start = performance.now();
+  let lastLap = start;
+  const laps: Record<string, number> = {};
+
+  const lap = (name: string) => {
+    const now = performance.now();
+    laps[name] = now - lastLap;
+    lastLap = now;
+  };
+
+  const printPerformance = () => {
+    const total = performance.now() - start;
+
+    console.log("\n=== initUpload Performance ===");
+    Object.entries(laps).forEach(([name, ms]) => {
+      console.log(`${name.padEnd(25)} ${ms.toFixed(2)} ms`);
+    });
+    console.log(`${"Total".padEnd(25)} ${total.toFixed(2)} ms`);
+    console.log("==============================\n");
+  };
+
   const { payload, tenantId, apiKey } = props;
 
-  const gDrive = await GDrive.findOne({ tenantId });
+  // Run both DB lookups in parallel with caching
+  const gDriveKey = buildCacheKey({ resource: "gdrive", identifier: tenantId });
+  const apiKeyKey = buildCacheKey({
+    resource: "api-key",
+    identifier: `${tenantId}:${apiKey}`
+  });
+
+  const [gDrive, credential] = await Promise.all([
+    cacheClient.get<IGDrive | null>({
+      key: gDriveKey,
+      query: async () => {
+        const doc = await GDrive.findOne({ tenantId }).lean();
+        return doc ?? null;
+      },
+      config: { shouldCache: (val) => val !== null, ttlSeconds: 600 }
+    }),
+    cacheClient.get<IApiKey | null>({
+      key: apiKeyKey,
+      query: async () => {
+        const doc = await ApiKey.findOne({
+          tenantId,
+          key: apiKey,
+          isActive: true
+        }).lean();
+        return doc ?? null;
+      },
+      config: { shouldCache: (val) => val !== null, ttlSeconds: 900 }
+    })
+  ]);
+
+  // lap1
+  lap("Find GDrive + API Key");
+
   if (!gDrive) {
     return {
       status: 400,
@@ -253,12 +308,6 @@ export const initUpload: serviceFunction<
     };
   }
 
-  const credential = await ApiKey.findOne({
-    tenantId,
-    key: apiKey,
-    isActive: true
-  }).lean();
-
   if (!credential) {
     return {
       status: 400,
@@ -266,7 +315,10 @@ export const initUpload: serviceFunction<
     };
   }
 
-  const folderName = credential.folderName || undefined;
+  // Use pre-resolved folder ID from the API key (set at key creation time)
+  const parents = credential.gDriveFolderId
+    ? [credential.gDriveFolderId]
+    : undefined;
 
   try {
     const authClient = googleClient.getTenantAuthClient({
@@ -274,6 +326,10 @@ export const initUpload: serviceFunction<
       refresh_token: gDrive.refreshToken,
       expiry_date: gDrive.expiry ?? 0
     });
+
+    // lap2
+    lap("Create Auth Client");
+
     authClient.on("tokens", async (newTokens) => {
       await GDrive.findOneAndUpdate(
         { tenantId },
@@ -285,33 +341,23 @@ export const initUpload: serviceFunction<
           })
         }
       );
+
+      // Invalidate cached GDrive credentials after token refresh
+      void cacheClient.delete(gDriveKey);
     });
 
-    let parents: string[] | undefined = undefined;
-    if (folderName) {
-      try {
-        const drive = googleClient.getTenantDriveClient({
-          access_token: gDrive.accessToken,
-          refresh_token: gDrive.refreshToken,
-          expiry_date: gDrive.expiry
-        });
-        const folderId = await getOrCreateFolder(drive, folderName);
-        parents = [folderId];
-      } catch (err) {
-        console.error("Failed to get/create parent folder:", err);
-      }
-    }
-
     const authHeaders = await authClient.getRequestHeaders();
+
+    // lap3
+    lap("Get Auth Headers");
 
     const headers = new Headers(authHeaders);
     headers.set("Content-Type", "application/json");
     headers.set("X-Upload-Content-Type", payload.mimeType);
     headers.set("X-Upload-Content-Length", payload.sizeInBytes.toString());
-    headers.set("Origin", "http://localhost:3001");
 
     const googleResponse = await fetch(
-      "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable",
+      "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id",
       {
         method: "POST",
         headers,
@@ -322,15 +368,22 @@ export const initUpload: serviceFunction<
       }
     );
 
+    // lap4
+    lap("Google Upload Init");
+
     const responseText = await googleResponse.text();
     const json = responseText ? JSON.parse(responseText) : null;
     const uploadUrl = googleResponse.headers.get("location");
+
+    // lap5
+    lap("Read Google Response");
 
     if (!googleResponse.ok) {
       throw new Error(
         `Google resumable upload init failed: ${googleResponse.status} ${googleResponse.statusText} ${JSON.stringify(json)}`
       );
     }
+
     if (!uploadUrl) {
       throw new Error("Location header missing from Google response");
     }
@@ -339,12 +392,14 @@ export const initUpload: serviceFunction<
       tenantId,
       fileName: payload.fileName,
       fullUrl: `https://drive.google.com/file/d/PENDING/preview`,
-      driveUrl: `https://drive.google.com/file/d/PENDING/preview`,
       previewUrl: `https://lh3.googleusercontent.com/d/PENDING`,
       mimeType: payload.mimeType,
       sizeInBytes: payload.sizeInBytes,
       uploadingStatus: MediaUploadingStatus.UPLOADING
     });
+
+    // lap6
+    lap("Create Media");
 
     void invalidateMediaAfterWrite(media._id);
 
@@ -353,9 +408,14 @@ export const initUpload: serviceFunction<
       media: media.toObject()
     });
 
+    // print all laps and total time
+    printPerformance();
+
     return { status: 201, response };
   } catch (error: unknown) {
+    printPerformance();
     console.error("Init Upload Error:", error);
+
     return {
       status: 500,
       response: createErrorResponse(
@@ -431,7 +491,6 @@ export const completeUpload: serviceFunction<
   }
 
   mediaDoc.gdriveFileId = gdriveFileId;
-  mediaDoc.driveUrl = `https://drive.google.com/file/d/${gdriveFileId}/preview`;
   mediaDoc.previewUrl = `https://lh3.googleusercontent.com/d/${gdriveFileId}`;
   mediaDoc.fullUrl = `https://drive.google.com/file/d/${gdriveFileId}/preview`;
   mediaDoc.uploadingStatus = MediaUploadingStatus.COMPLETED;

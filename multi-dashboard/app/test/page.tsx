@@ -1,7 +1,7 @@
 "use client";
 
-import { IMedia, MimeType } from "@/types/domain/system/media";
 import { MediaUploader } from "@/components/upload-media";
+import { IMedia } from "@/types/domain/system/media";
 import { useState } from "react";
 
 export default function TestPage() {
@@ -16,7 +16,7 @@ export default function TestPage() {
 
   return (
     <div className="p-10">
-      <MediaUploader onError={onError} onSuccess={onSuccess} />
+      <MediaUploader onError={onError} onSuccess={onSuccess} apiKey="" />
 
       {error && <div className="text-red-500">{error}</div>}
 

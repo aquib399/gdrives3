@@ -1,4 +1,5 @@
 import { cacheClient, cacheNameSpace } from "@/clients/index.js";
+import { googleClient } from "@/clients/google.js";
 import { ApiKey, GDrive, type IApiKey } from "@/models/index.js";
 import { buildCacheKey } from "@/utils/cache.js";
 import { buildMongoPipeline } from "@/utils/mongo/pipeline.js";
@@ -14,6 +15,34 @@ import crypto from "crypto";
 import { Types } from "mongoose";
 
 const RESOURCE = "api-credentials";
+
+/** Resolve a GDrive folder ID by name, creating it if it doesn't exist.
+ *  Called at API key creation/update time — NOT on every upload. */
+async function getOrCreateFolderForKey(
+  drive: any,
+  folderName: string
+): Promise<string> {
+  const response = await drive.files.list({
+    q: `name = '${folderName.replace(/'/g, "\\'")}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+    fields: "files(id)",
+    spaces: "drive"
+  });
+
+  const files = response.data.files || [];
+  if (files.length > 0) {
+    return files[0].id;
+  }
+
+  const folder = await drive.files.create({
+    requestBody: {
+      name: folderName,
+      mimeType: "application/vnd.google-apps.folder"
+    },
+    fields: "id"
+  });
+
+  return folder.data.id;
+}
 
 async function invalidateApiCredentialCache(
   id?: string | Types.ObjectId
@@ -113,7 +142,7 @@ export const createApiCredential: serviceFunction<
   CreateApiCredentialPayload,
   CreateApiCredentialResponse
 > = async ({ tenantId, data }) => {
-  const gDrive = await GDrive.exists({ tenantId });
+  const gDrive = await GDrive.findOne({ tenantId }).lean();
   if (!gDrive) {
     return {
       status: 400,
@@ -124,11 +153,27 @@ export const createApiCredential: serviceFunction<
   const name = data.name.trim();
   const folderName = data.folderName.trim();
 
+  // Resolve the folder ID upfront so initUpload doesn't need to
+  let gDriveFolderId: string | undefined;
+  if (folderName) {
+    try {
+      const drive = googleClient.getTenantDriveClient({
+        access_token: gDrive.accessToken,
+        refresh_token: gDrive.refreshToken,
+        expiry_date: gDrive.expiry
+      });
+      gDriveFolderId = await getOrCreateFolderForKey(drive, folderName);
+    } catch (err) {
+      console.error("Failed to resolve GDrive folder:", err);
+    }
+  }
+
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const apiKey = new ApiKey({
       tenantId,
       name,
       folderName,
+      gDriveFolderId,
       key: `sk_${crypto.randomBytes(16).toString("hex")}`,
       isActive: true
     });
@@ -157,6 +202,7 @@ export const createApiCredential: serviceFunction<
 
 export type UpdateApiCredentialPayload = {
   id: string;
+  tenantId: string;
   data: { name?: string; folderName?: string; isActive?: boolean };
 };
 export type UpdateApiCredentialResponse = { apiKey: IApiKey };
@@ -164,14 +210,35 @@ export type UpdateApiCredentialResponse = { apiKey: IApiKey };
 export const updateApiCredential: serviceFunction<
   UpdateApiCredentialPayload,
   UpdateApiCredentialResponse
-> = async ({ id, data }) => {
-  const updateData = {
+> = async ({ id, tenantId, data }) => {
+  const updateData: Record<string, any> = {
     ...(data.name !== undefined ? { name: data.name.trim() } : {}),
-    ...(data.folderName !== undefined
-      ? { folderName: data.folderName.trim() }
-      : {}),
     ...(data.isActive !== undefined ? { isActive: data.isActive } : {})
   };
+
+  // If folderName changed, re-resolve the folder ID
+  if (data.folderName !== undefined) {
+    const folderName = data.folderName.trim();
+    updateData.folderName = folderName;
+
+    if (folderName) {
+      try {
+        const gDrive = await GDrive.findOne({ tenantId }).lean();
+        if (gDrive) {
+          const drive = googleClient.getTenantDriveClient({
+            access_token: gDrive.accessToken,
+            refresh_token: gDrive.refreshToken,
+            expiry_date: gDrive.expiry
+          });
+          updateData.gDriveFolderId = await getOrCreateFolderForKey(drive, folderName);
+        }
+      } catch (err) {
+        console.error("Failed to resolve GDrive folder on update:", err);
+      }
+    } else {
+      updateData.gDriveFolderId = undefined;
+    }
+  }
 
   const apiKey = await ApiKey.findByIdAndUpdate(
     id,

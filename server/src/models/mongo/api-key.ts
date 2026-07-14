@@ -7,6 +7,7 @@ export interface IApiKey extends BaseEntity {
   key: string;
   name: string;
   folderName: string;
+  gDriveFolderId?: string;
   isActive: boolean;
 }
 
@@ -22,6 +23,7 @@ const ApiKeySchema = new Schema<IApiKey>(
     key: { type: String, required: true, unique: true },
     name: { type: String, default: "Default Key" },
     folderName: { type: String, default: "" },
+    gDriveFolderId: { type: String },
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now }
   },

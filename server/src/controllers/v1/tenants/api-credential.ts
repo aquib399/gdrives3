@@ -42,9 +42,11 @@ export const createApiCredential: routerFunction<
 export const updateApiCredential: routerFunction<
   validation.UpdateApiCredentialPayload
 > = async (req, res) => {
+  const tenantId = String(res.locals.id);
   const { id } = req.params;
   const { response, status } = await service.updateApiCredential({
     id,
+    tenantId,
     data: req.body
   });
   return res.status(status).json(response);

@@ -101,7 +101,6 @@ export function RenderMedia(props: RenderMediaProps) {
   let m: {
     mimeType: string;
     fullUrl: string;
-    driveUrl: string;
     previewUrl: string;
     fileName: string;
   };
@@ -126,7 +125,6 @@ export function RenderMedia(props: RenderMediaProps) {
     m = {
       mimeType: media.mimeType,
       fullUrl: media.fullUrl,
-      driveUrl: media.driveUrl || media.fullUrl,
       previewUrl: media.previewUrl || media.fullUrl,
       fileName: media.fileName || "file"
     };
@@ -134,7 +132,6 @@ export function RenderMedia(props: RenderMediaProps) {
     m = {
       mimeType: props.fullUrlMimeType?.toString() || "application/octet-stream",
       fullUrl: props.fullUrl,
-      driveUrl: props.fullUrl,
       previewUrl: props.fullUrl,
       fileName: props.fullUrl.split("/").pop() || "file"
     };
@@ -147,7 +144,7 @@ export function RenderMedia(props: RenderMediaProps) {
   if (variant === "inline") {
     return (
       <a
-        href={m.driveUrl}
+        href={m.fullUrl}
         target="_blank"
         rel="noreferrer"
         className={cn(
@@ -232,7 +229,7 @@ export function RenderMedia(props: RenderMediaProps) {
           </ModalTrigger>
           <ModalContent className="flex justify-center border-none bg-transparent shadow-none">
             <iframe
-              src={m.driveUrl}
+              src={m.fullUrl}
               className="h-[75vh] w-[85vw] max-w-5xl rounded-lg border-none"
               allow="autoplay"
             />
@@ -254,7 +251,7 @@ export function RenderMedia(props: RenderMediaProps) {
           </div>
 
           <iframe
-            src={m.driveUrl}
+            src={m.fullUrl}
             className="h-32 w-full rounded-lg border-none bg-black/5"
             allow="autoplay"
           />
@@ -286,7 +283,7 @@ export function RenderMedia(props: RenderMediaProps) {
           </ModalTrigger>
           <ModalContent className="flex justify-center border-none bg-transparent shadow-none">
             <iframe
-              src={m.driveUrl}
+              src={m.fullUrl}
               className="h-[75vh] w-[85vw] max-w-5xl rounded-lg border-none"
             />
           </ModalContent>
@@ -296,7 +293,7 @@ export function RenderMedia(props: RenderMediaProps) {
     default:
       return (
         <a
-          href={m.driveUrl}
+          href={m.fullUrl}
           target="_blank"
           rel="noreferrer"
           className={cn(

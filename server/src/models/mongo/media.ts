@@ -11,7 +11,6 @@ export enum MediaUploadingStatus {
 export interface IMedia extends BaseEntity {
   fileName: string;
   fullUrl: string;
-  driveUrl: string;
   previewUrl: string;
   mimeType: string;
   gdriveFileId?: string;
@@ -26,7 +25,6 @@ const MediaSchema = new Schema<IMedia>(
   {
     fileName: { type: String, required: true },
     fullUrl: { type: String, required: true },
-    driveUrl: { type: String, required: true },
     previewUrl: { type: String, required: true },
     tenantId: { type: Types.ObjectId, required: true, ref: Models.Tenant.ref },
     mimeType: { type: String, required: true },

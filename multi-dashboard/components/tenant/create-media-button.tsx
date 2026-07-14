@@ -1,20 +1,17 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-
-import { Button } from "@/components/ui/button";
 import { Modal, ModalContent, ModalTrigger } from "@/components/modal";
 import { MediaUploader } from "@/components/upload-media";
 import { useApiCredentialList } from "@/hooks/api/tenant";
-import useDebounce from "@/hooks/useDebounce";
-import Combobox, { SearchResult } from "../combo-box";
 import { IApiKey } from "@/types/domain/api-credential";
+import { useCallback, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import Combobox, { SearchResult } from "../combo-box";
+import { Button } from "@/components/ui/button";
+import useDebounce from "@/hooks/useDebounce";
 import { Label } from "../ui/label";
 
 export function CreateMediaButton() {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
@@ -64,7 +61,6 @@ export function CreateMediaButton() {
               queryClient.invalidateQueries({
                 queryKey: ["tenant", "list", "media"]
               });
-              router.push(`/tenant/files/${media._id}`);
             }}
             onError={() => undefined}
           />
