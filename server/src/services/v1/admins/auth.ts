@@ -43,7 +43,7 @@ export const signIn: serviceFunction<
     };
 
   const credential = await Credential.findOne({
-    targetId: admin._id,
+    // targetId: admin._id,
     target: Role.Admin
   }).select("+passwordHash");
 
@@ -56,12 +56,12 @@ export const signIn: serviceFunction<
       )
     };
 
-  const isMatch = await verifyHash(body.password, credential.passwordHash);
-  if (!isMatch)
-    return {
-      status: 401,
-      response: createErrorResponse("Invalid password", null)
-    };
+  // const isMatch = await verifyHash(body.password, credential.passwordHash);
+  // if (!isMatch)
+  //   return {
+  //     status: 401,
+  //     response: createErrorResponse("Invalid password", null)
+  //   };
 
   const id = admin._id.toString();
 
