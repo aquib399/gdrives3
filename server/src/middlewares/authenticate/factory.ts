@@ -34,6 +34,11 @@ const baseAttachPayloadKey = {
   exp: "exp"
 };
 
+function getHeaderValue(headers: Request["headers"], name: string) {
+  const value = headers[name];
+  return Array.isArray(value) ? value[0] : value;
+}
+
 function attachPayloadToLocals(
   res: Response,
   payload: Record<string, any>,
@@ -58,9 +63,7 @@ export function createAuthMiddleware(config: AuthConfig) {
     const headerAccessToken = authorization?.split(" ")[1];
     const cookieAccessToken = cookies[config.accessCookie.name];
 
-    const headerRefreshToken = Array.isArray(headers[headerRefreshVarName])
-      ? headers[headerRefreshVarName][0]
-      : headers[headerRefreshVarName];
+    const headerRefreshToken = getHeaderValue(headers, headerRefreshVarName);
     const cookieRefreshToken = cookies[config.refreshCookie.name];
 
     const accessToken = headerAccessToken || cookieAccessToken;

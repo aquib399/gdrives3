@@ -53,6 +53,12 @@ function parsePagination(
   );
   return { page, limit, skip: (page - 1) * limit };
 }
+
+function parseSortParam(sortParam: string): [string, 1 | -1] {
+  const [field, order] = sortParam.trim().split(":");
+  return [field, order?.toLowerCase() === "desc" ? -1 : 1];
+}
+
 function parseSort<T>(
   sortQuery: any,
   config: SchemaConfig<T>
@@ -63,9 +69,8 @@ function parseSort<T>(
     const sortFields = String(sortQuery).split(",").filter(Boolean);
 
     for (const sortParam of sortFields) {
-      const [field, order] = sortParam.trim().split(":");
-
-      sort[field] = order?.toLowerCase() === "desc" ? -1 : 1;
+      const [field, direction] = parseSortParam(sortParam);
+      sort[field] = direction;
     }
   } else if (config.defaultSort) {
     sort[String(config.defaultSort.field)] =

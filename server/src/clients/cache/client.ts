@@ -66,14 +66,10 @@ export class CacheLayerClient {
     // Walk the tiers in order. First hit wins. On a hit, backfill every
     // *earlier* tier we skipped over (so it's warm next time) and
     // optionally kick off a background refresh from the source of truth.
-    for (let i = 0; i < this.tiers.length; i++) {
-      if (resolved.skipTiers.has(i)) continue;
-
-      const tier = this.tiers[i];
-      const hit = await this.safeTierGet<T>(tier, cacheKey);
-      if (hit === undefined) continue;
-
-      this.backfillEarlierTiers(i, cacheKey, hit, resolved);
+    const cacheHit = await this.findCacheHit(cacheKey, resolved);
+    if (cacheHit) {
+      const { index, entry } = cacheHit;
+      this.backfillEarlierTiers(index, cacheKey, entry, resolved);
 
       if (resolved.refreshInBackground) {
         void this.refreshFromSource(cacheKey, query, resolved).catch((err) =>
@@ -84,7 +80,7 @@ export class CacheLayerClient {
         );
       }
 
-      return hit.value;
+      return entry.value;
     }
 
     // Nothing in any tier — fetch from the source of truth once (dedup'd
@@ -157,6 +153,20 @@ export class CacheLayerClient {
   // ---------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------
+
+  private async findCacheHit<T>(
+    key: string,
+    resolved: ResolvedOptions<T>
+  ): Promise<{ index: number; entry: TierEntry<T> } | undefined> {
+    for (let index = 0; index < this.tiers.length; index++) {
+      if (resolved.skipTiers.has(index)) continue;
+
+      const entry = await this.safeTierGet<T>(this.tiers[index], key);
+      if (entry !== undefined) return { index, entry };
+    }
+
+    return undefined;
+  }
 
   private resolveOptions<T>(options: CacheGetOptions<T>): ResolvedOptions<T> {
     const ttlSeconds = options.ttlSeconds ?? this.defaultTtlSeconds;

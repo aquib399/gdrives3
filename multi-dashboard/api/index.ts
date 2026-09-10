@@ -19,10 +19,19 @@ interface NormalizedError {
   message: string;
   status: number;
 }
-interface NormalizedError {
-  message: string;
-  status: number;
-}
+
+const createErrorResponse = <T>(
+  status: number,
+  message: string
+): ApiRequestResult<T> => ({
+  status,
+  ok: false,
+  data: {
+    error: true,
+    message,
+    data: undefined
+  }
+});
 
 const normalizeError = (error: ApiRequestResult | unknown): NormalizedError => {
   const err = error as Partial<ApiRequestResult> & {
@@ -68,29 +77,13 @@ export const request = async <T>(
 
     const { message, status } = normalizeError(error);
 
-    const resp: ApiRequestResult<T> = {
-      status,
-      ok: false,
-      data: {
-        error: true,
-        message,
-        data: undefined
-      }
-    };
+    const resp = createErrorResponse<T>(status, message);
 
     showToast(resp);
 
     if (!props.forceReturn) {
       throw new Error(message || "An error occurred");
     }
-    return {
-      status,
-      ok: false,
-      data: {
-        error: true,
-        message,
-        data: undefined
-      }
-    };
+    return resp;
   }
 };

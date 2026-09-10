@@ -33,18 +33,19 @@ export const mergeInfinitePaginatedResponse = <T>(
   }
 
   const lastPage = pages[pages.length - 1];
+  const lastPageData = lastPage.data ?? {};
   const mergedResults = pages.flatMap((page) => page.data?.results ?? []);
 
   return {
     ...lastPage,
     data: {
-      page: lastPage.data?.page ?? 1,
-      totalPages: lastPage.data?.totalPages ?? 1,
-      limit: lastPage.data?.limit ?? 0,
-      totalResults: lastPage.data?.totalResults ?? 0,
-      next: lastPage.data?.next ?? null,
-      previous: lastPage.data?.previous ?? null,
-      ...(lastPage.data ?? {}),
+      page: lastPageData.page ?? 1,
+      totalPages: lastPageData.totalPages ?? 1,
+      limit: lastPageData.limit ?? 0,
+      totalResults: lastPageData.totalResults ?? 0,
+      next: lastPageData.next ?? null,
+      previous: lastPageData.previous ?? null,
+      ...lastPageData,
       results: mergedResults
     }
   };

@@ -22,6 +22,27 @@ interface DataTablePaginationProps {
   onLimitChange: (limit: number) => void;
 }
 
+function getPageNumbers(page: number, totalPages: number): (number | "...")[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  if (page <= 3) return [1, 2, 3, 4, "...", totalPages];
+
+  if (page >= totalPages - 2) {
+    return [
+      1,
+      "...",
+      totalPages - 3,
+      totalPages - 2,
+      totalPages - 1,
+      totalPages
+    ];
+  }
+
+  return [1, "...", page - 1, page, page + 1, "...", totalPages];
+}
+
 export function DataTablePagination({
   page,
   totalPages,
@@ -30,31 +51,10 @@ export function DataTablePagination({
   onPageChange,
   onLimitChange
 }: DataTablePaginationProps) {
-  const pages = useMemo(() => {
-    const getPageNumbers = (): (number | "...")[] => {
-      if (totalPages <= 7) {
-        return Array.from({ length: totalPages }, (_, i) => i + 1);
-      }
-
-      if (page <= 3) {
-        return [1, 2, 3, 4, "...", totalPages];
-      }
-
-      if (page >= totalPages - 2) {
-        return [
-          1,
-          "...",
-          totalPages - 3,
-          totalPages - 2,
-          totalPages - 1,
-          totalPages
-        ];
-      }
-
-      return [1, "...", page - 1, page, page + 1, "...", totalPages];
-    };
-    return getPageNumbers();
-  }, [page, totalPages]);
+  const pages = useMemo(() => getPageNumbers(page, totalPages), [
+    page,
+    totalPages
+  ]);
 
   return (
     <div className="flex w-full items-center justify-between">
