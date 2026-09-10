@@ -39,7 +39,7 @@ export const signIn: serviceFunction<
   if (!admin)
     return {
       status: 401,
-      response: createErrorResponse("Invalid email or password", null)
+      response: createErrorResponse("No account found with this email", null)
     };
 
   const credential = await Credential.findOne({
@@ -50,14 +50,17 @@ export const signIn: serviceFunction<
   if (!credential)
     return {
       status: 401,
-      response: createErrorResponse("Invalid email or password", null)
+      response: createErrorResponse(
+        "Platform error, please register again.",
+        null
+      )
     };
 
   const isMatch = await verifyHash(body.password, credential.passwordHash);
   if (!isMatch)
     return {
       status: 401,
-      response: createErrorResponse("Invalid email or password", null)
+      response: createErrorResponse("Invalid password", null)
     };
 
   const id = admin._id.toString();

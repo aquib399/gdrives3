@@ -73,7 +73,7 @@ export const validate =
       console.error("Error in middlewares.validations.index", error);
       return res.status(500).json({
         error: true,
-        message: "Validation Internal Server Error",
+        message: "Error while validating request",
         data: null
       });
     }
