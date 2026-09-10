@@ -56,7 +56,12 @@ export const signIn: serviceFunction<
       )
     };
 
-  // const isMatch = await verifyHash(body.password, credential.passwordHash);
+  const isMatch = await verifyHash(body.password, credential.passwordHash);
+  if (!isMatch)
+    return {
+      status: 401,
+      response: createErrorResponse("Invalid password", null)
+    };
   // if (!isMatch)
   //   return {
   //     status: 401,
