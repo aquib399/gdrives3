@@ -18,5 +18,5 @@
 // }
 
 export function deepCopy<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
+Revert to the previous implementation that correctly handles Mongoose Types.ObjectId, Date, RegExp, and arrays/objects recursively.
 }
