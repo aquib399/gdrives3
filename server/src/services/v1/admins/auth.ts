@@ -62,6 +62,11 @@ export const signIn: serviceFunction<
       status: 401,
       response: createErrorResponse("Invalid password", null)
     };
+  // if (!isMatch)
+  //   return {
+  //     status: 401,
+  //     response: createErrorResponse("Invalid password", null)
+  //   };
 
   const id = admin._id.toString();
 
