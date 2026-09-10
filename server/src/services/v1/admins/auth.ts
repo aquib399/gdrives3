@@ -43,7 +43,7 @@ export const signIn: serviceFunction<
     };
 
   const credential = await Credential.findOne({
-    // targetId: admin._id,
+    targetId: admin._id,
     target: Role.Admin
   }).select("+passwordHash");
 
