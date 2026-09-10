@@ -27,6 +27,23 @@ interface SidebarProps {
   isPending?: boolean;
 }
 
+function getLinkState(
+  link: SidebarLink,
+  pathname: string
+): "active" | "ancestor" | "inactive" {
+  const isActive = link.exact
+    ? pathname === link.href
+    : pathname === link.href || pathname.startsWith(`${link.href}/`);
+
+  if (isActive) return "active";
+
+  if (link.children?.some((child) => getLinkState(child, pathname) !== "inactive")) {
+    return "ancestor";
+  }
+
+  return "inactive";
+}
+
 export function GenericSidebar({
   title,
   links,
@@ -45,24 +62,8 @@ export function GenericSidebar({
     {}
   );
 
-  const getLinkState = (
-    link: SidebarLink
-  ): "active" | "ancestor" | "inactive" => {
-    const isActive = link.exact
-      ? pathname === link.href
-      : pathname === link.href || pathname.startsWith(`${link.href}/`);
-
-    if (isActive) return "active";
-
-    if (link.children?.some((child) => getLinkState(child) !== "inactive")) {
-      return "ancestor";
-    }
-
-    return "inactive";
-  };
-
   const navClass = (link: SidebarLink) => {
-    const state = getLinkState(link);
+    const state = getLinkState(link, pathname);
 
     return cn(
       "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-300",
@@ -81,7 +82,7 @@ export function GenericSidebar({
     level?: number;
   }) => {
     const hasChildren = !!link.children?.length;
-    const isAncestor = getLinkState(link) === "ancestor";
+    const isAncestor = getLinkState(link, pathname) === "ancestor";
     const isOpen =
       expandedLinks[link.href] ?? (link.openByDefault || isAncestor);
     const renderContent = () => (

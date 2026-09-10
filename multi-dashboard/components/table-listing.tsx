@@ -61,6 +61,14 @@ export interface ListingPageProps<T> {
   useLimitedheight?: boolean | string;
 }
 
+function createSearchParams(params: Record<string, string>) {
+  const filteredParams = Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value != null && value !== "")
+  );
+
+  return new URLSearchParams(filteredParams);
+}
+
 export function ListingContent<T>(props: ListingPageProps<T>) {
   const {
     title,
@@ -116,19 +124,7 @@ export function ListingContent<T>(props: ListingPageProps<T>) {
   >({});
 
   const getSearchParams = useCallback(
-    () =>
-      new URLSearchParams(
-        Object.entries(filtersFromParams).reduce(
-          (acc, [key, value]) => {
-            if (value != null && value !== "") {
-              acc[key] = String(value);
-            }
-
-            return acc;
-          },
-          {} as Record<string, string>
-        )
-      ),
+    () => createSearchParams(filtersFromParams),
     [filtersFromParams]
   );
 

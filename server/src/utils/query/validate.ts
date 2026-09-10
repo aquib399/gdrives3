@@ -12,6 +12,19 @@ export interface ValidateConfigProps<T> {
 
 const RESERVED_KEYS = ["page", "limit", "sort", "populate", "search"];
 
+function getFilterDefinition<T>(
+  fieldPath: string,
+  config: SchemaConfig<T>
+) {
+  return (
+    config.allowedFilters?.[
+      fieldPath as keyof typeof config.allowedFilters
+    ] || config.requiredFilters?.[
+      fieldPath as keyof typeof config.requiredFilters
+    ]
+  );
+}
+
 function validatePopulate<T>(
   populate: any,
   config: SchemaConfig<T>,
@@ -133,13 +146,7 @@ function validateFilters<T>(
     const [fieldPath, operatorStr] = key.split("__");
     const operator = (operatorStr || "equals") as Operator;
 
-    const filterDef =
-      config.allowedFilters?.[
-        fieldPath as keyof typeof config.allowedFilters
-      ] ||
-      config.requiredFilters?.[
-        fieldPath as keyof typeof config.requiredFilters
-      ];
+    const filterDef = getFilterDefinition(fieldPath, config);
 
     if (!filterDef) {
       errors[`body.${fieldPath}`] = `Filter not allowed: '${fieldPath}'`;

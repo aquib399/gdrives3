@@ -12,7 +12,8 @@ export function buildQueryParams(
 ): Record<string, string> {
   const params: Record<string, string> = { ...baseParams };
 
-  filters.forEach(({ field, operator, value }) => {
+  for (const filter of filters) {
+    let { field, operator, value } = filter;
     if (!operator) {
       operator = "equals";
     }
@@ -21,7 +22,7 @@ export function buildQueryParams(
       operator !== "empty" &&
       operator !== "not_empty"
     ) {
-      return;
+      continue;
     }
 
     let key: string;
@@ -33,7 +34,7 @@ export function buildQueryParams(
     }
 
     params[key] = Array.isArray(value) ? value.join(",") : String(value);
-  });
+  }
 
   return params;
 }
