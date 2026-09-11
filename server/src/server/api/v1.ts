@@ -8,7 +8,7 @@ const router = Router();
 
 router.all("/health", base.healthCheck);
 
-router.use(`/${Role.Admin}/v1`, adminsRouter);
-router.use(`/${Role.Tenant}/v1`, tenantRouter);
+router.use(`/${Role.Admin}`, adminsRouter);
+router.use(`/${Role.Tenant}`, tenantRouter);
 
 export default router;

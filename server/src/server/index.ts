@@ -11,7 +11,7 @@ import "@/clients/index.js";
 
 Error.stackTraceLimit = 1;
 
-app.set("trust proxy", 1);
+// app.set("trust proxy", 1);
 app.use(corsConfig, express.json({ limit: "5mb" }), logger);
 const currentDateTime = getDateTime(new Date());
 
