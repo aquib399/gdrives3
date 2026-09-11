@@ -29,7 +29,7 @@ export function getCookieSetting(maxAgeMs: number, role: Role): CookieOptions {
 
     // Specifies the URL path where the cookie is valid.
     // path: `/api/${role}`, // only sent to this role's endpoints
-    // path: "/",
+    path: "",
     // Defines the cookie's lifespan in milliseconds.
     // Once this time elapses, the browser will automatically delete the cookie.
     maxAge: maxAgeMs,
