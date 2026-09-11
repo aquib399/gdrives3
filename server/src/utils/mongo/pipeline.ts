@@ -142,6 +142,8 @@ const applyOperator = (
     case "regex":
       matchStage[key] = { $regex: new RegExp(value) };
       break;
+    default:
+      throw new Error(`Unsupported operator: ${operator}`);
   }
 };
 
