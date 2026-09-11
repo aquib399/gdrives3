@@ -25,7 +25,7 @@ export function getCookieSetting(maxAgeMs: number, role: Role): CookieOptions {
     // Ensures the browser only sends the cookie over encrypted (HTTPS) connections.
     // Required to be true in production when sameSite is set to "none".
     // secure: IS_PRODUCTION,
-secure: true,
+    secure: true,
 
     // Specifies the URL path where the cookie is valid.
     // path: `/api/${role}`, // only sent to this role's endpoints
