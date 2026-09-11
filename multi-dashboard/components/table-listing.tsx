@@ -10,6 +10,7 @@ import { FilterBuilder } from "./filter";
 import { ArrowDown, RefreshCw } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
+import { toSearchParams } from "@/utils/filter";
 import React, {
   useRef,
   useState,
@@ -59,14 +60,6 @@ export interface ListingPageProps<T> {
   refetch: () => void;
   isRefetching: boolean;
   useLimitedheight?: boolean | string;
-}
-
-function createSearchParams(params: Record<string, string>) {
-  const filteredParams = Object.fromEntries(
-    Object.entries(params).filter(([, value]) => value != null && value !== "")
-  );
-
-  return new URLSearchParams(filteredParams);
 }
 
 export function ListingContent<T>(props: ListingPageProps<T>) {
@@ -124,7 +117,7 @@ export function ListingContent<T>(props: ListingPageProps<T>) {
   >({});
 
   const getSearchParams = useCallback(
-    () => createSearchParams(filtersFromParams),
+    () => toSearchParams(filtersFromParams),
     [filtersFromParams]
   );
 
@@ -183,9 +176,7 @@ export function ListingContent<T>(props: ListingPageProps<T>) {
       params.delete("search");
     }
 
-    const query = params.toString();
-
-    router.replace(query ? `${pathname}?${query}` : pathname, {
+    router.replace(params.toString() ? `${pathname}?${params}` : pathname, {
       scroll: false
     });
   }, [
@@ -196,14 +187,16 @@ export function ListingContent<T>(props: ListingPageProps<T>) {
     router
   ]);
 
+  const replaceQuery = (params: URLSearchParams) => {
+    router.replace(`${pathname}?${params}`, { scroll: false });
+  };
+
   const handlePageChange = (page: number) => {
     const params = getSearchParams();
 
     params.set("page", page.toString());
 
-    router.replace(`${pathname}?${params.toString()}`, {
-      scroll: false
-    });
+    replaceQuery(params);
   };
 
   const handleLimitChange = (value: string) => {
@@ -212,9 +205,7 @@ export function ListingContent<T>(props: ListingPageProps<T>) {
     params.set("limit", value);
     params.set("page", "1");
 
-    router.replace(`${pathname}?${params.toString()}`, {
-      scroll: false
-    });
+    replaceQuery(params);
   };
 
   const activeFilters = useMemo(() => {

@@ -1,16 +1,26 @@
 import { Filter } from "@/types/filter-config";
 
+export type QueryParams = Record<string, string>;
+
+export function removeEmptyParams(params: QueryParams): QueryParams {
+  return Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value.trim() !== "")
+  );
+}
+
+export function toSearchParams(params: QueryParams) {
+  return new URLSearchParams(removeEmptyParams(params));
+}
+
 export function buildQueryString(params?: Record<string, string>) {
-  return Object.entries(params || {})
-    .map(([key, value]) => `${key}=${value}`)
-    .join("&");
+  return toSearchParams(params || {}).toString();
 }
 
 export function buildQueryParams(
   filters: Filter[],
-  baseParams: Record<string, string> = {}
-): Record<string, string> {
-  const params: Record<string, string> = { ...baseParams };
+  baseParams: QueryParams = {}
+): QueryParams {
+  const params: QueryParams = { ...baseParams };
 
   for (const filter of filters) {
     let { field, operator, value } = filter;
@@ -33,8 +43,12 @@ export function buildQueryParams(
       key = `${field}__${operator}`;
     }
 
-    params[key] = Array.isArray(value) ? value.join(",") : String(value);
+    const normalizedValue = Array.isArray(value) ? value.join(",") : String(value);
+
+    if (normalizedValue.trim() !== "") {
+      params[key] = normalizedValue;
+    }
   }
 
-  return params;
+  return removeEmptyParams(params);
 }

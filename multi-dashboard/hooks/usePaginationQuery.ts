@@ -1,6 +1,14 @@
 import { useSearchParams } from "next/navigation";
 import { PAGINATION } from "@/lib/constant";
 
+export interface PaginationQuery {
+  [key: string]: string;
+  search: string;
+  page: string;
+  limit: string;
+  sort: string;
+}
+
 function getSingleParam(searchParams: URLSearchParams, key: string) {
   const values = searchParams.getAll(key);
   return values.length === 1 ? values[0] : undefined;
@@ -8,7 +16,13 @@ function getSingleParam(searchParams: URLSearchParams, key: string) {
 
 export function usePaginationQuery() {
   const searchParams = useSearchParams();
-  const allParams = Object.fromEntries(searchParams.entries());
+  const allParams: Record<string, string> = {};
+
+  for (const [key, value] of searchParams.entries()) {
+    if (value.trim() !== "") {
+      allParams[key] = value.trim();
+    }
+  }
 
   const pageValue = getSingleParam(searchParams, "page");
   const limitValue = getSingleParam(searchParams, "limit");
@@ -23,15 +37,15 @@ export function usePaginationQuery() {
     Math.max(PAGINATION.MIN_LIMIT, parsedLimit)
   );
 
-  const search = searchValue ?? "";
+  const search = searchValue?.trim() ?? "";
 
-  const sort = allParams.sort ?? PAGINATION.DEFAULT_SORT;
+  const sort = allParams.sort || PAGINATION.DEFAULT_SORT;
 
   return {
     ...allParams,
-    search: search.trim(),
+    search,
     page: String(page),
     limit: String(limit),
     sort: sort.trim()
-  };
+  } satisfies PaginationQuery;
 }

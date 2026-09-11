@@ -4,8 +4,9 @@ import { UseInfiniteQueryResult } from "@tanstack/react-query";
 import { PaginatedApiResponse } from "@/hooks/api";
 import { ColumnDef, ListingContent } from "../table-listing";
 import { TableSkeleton } from "../table-skeleton";
-import { useListing } from "@/hooks/useListing";
+import { ListingState, useListing } from "@/hooks/useListing";
 import { Filter } from "@/types/filter-config";
+import { SchemaConfig } from "@/types/filter-config";
 
 interface HOCListingConfig<T> {
   title: string;
@@ -13,7 +14,7 @@ interface HOCListingConfig<T> {
   searchPlaceholder: string;
   columns: ColumnDef<T>[];
   initialFilters?: Filter[];
-  schemaConfig?: any;
+  schemaConfig: SchemaConfig<T>;
   HeaderUtils?: React.ReactNode;
   useFetchList: (
     props: HookProps<(props: ApiFunctionProps) => Promise<ApiRequestResult<T>>>
@@ -25,11 +26,11 @@ interface HOCListingConfig<T> {
 
 export function withListing<T>(config: HOCListingConfig<T>) {
   return function WithListingComponent(props: any) {
-    const listConfig = useListing(config.initialFilters);
+    const listing: ListingState = useListing(config.initialFilters);
 
     const { data, isPending, refetch, isRefetching, error } =
       config.useFetchList({
-        queryParams: listConfig.processedFilters
+        queryParams: listing.processedFilters
       });
 
     const results = data?.data?.results ?? [];
@@ -55,8 +56,8 @@ export function withListing<T>(config: HOCListingConfig<T>) {
         skeleton={
           <TableSkeleton rowCount={8} columns={config.columns as any} />
         }
-        updateFilters={listConfig.updateFilters}
-        activeFilters={listConfig.activeFilters}
+        updateFilters={listing.updateFilters}
+        activeFilters={listing.activeFilters}
         schemaConfig={config.schemaConfig}
         {...props}
       />
