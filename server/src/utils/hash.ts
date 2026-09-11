@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 
 export async function hashString(
   input: string,
-  rounds: number = 10
+  rounds: number = 12
 ): Promise<string> {
   if (!Number.isFinite(rounds) || rounds <= 0) {
     throw new Error("rounds must be a positive number");
