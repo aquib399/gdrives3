@@ -20,7 +20,15 @@ export function getCookieSetting(maxAgeMs: number, role: Role): CookieOptions {
   const settings: CookieOptions = {
     // Prevents client-side scripts (like document.cookie) from accessing the cookie.
     // This is a critical security measure to mitigate Cross-Site Scripting (XSS) attacks.
-    // httpOnly: true,
+function getCookieSetting(maxAgeMs: number, role: Role): CookieOptions {
+  const settings: CookieOptions = {
+    httpOnly: true,
+    maxAge: maxAgeMs,
+    sameSite: "none"
+  };
+
+  return settings;
+}
 
     // Ensures the browser only sends the cookie over encrypted (HTTPS) connections.
     // Required to be true in production when sameSite is set to "none".
