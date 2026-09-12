@@ -32,7 +32,7 @@ export function getCookieSetting(maxAgeMs: number, role: Role): CookieOptions {
     // path: "",
     // Defines the cookie's lifespan in milliseconds.
     // Once this time elapses, the browser will automatically delete the cookie.
-    // maxAge: maxAgeMs,
+    maxAge: maxAgeMs,
 
     // Restricts the cookie to a specific domain.
     // In production, this should be set to actual domain (e.g., "yourdomain.com") to ensure the cookie is sent correctly.
