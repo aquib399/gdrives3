@@ -20,7 +20,15 @@ export function getCookieSetting(maxAgeMs: number, role: Role): CookieOptions {
   const settings: CookieOptions = {
     // Prevents client-side scripts (like document.cookie) from accessing the cookie.
     // This is a critical security measure to mitigate Cross-Site Scripting (XSS) attacks.
+function getCookieSetting(maxAgeMs: number, role: Role): CookieOptions {
+  const settings: CookieOptions = {
     httpOnly: true,
+    maxAge: maxAgeMs,
+    sameSite: "none"
+  };
+
+  return settings;
+}
 
     // Ensures the browser only sends the cookie over encrypted (HTTPS) connections.
     // Required to be true in production when sameSite is set to "none".
@@ -29,7 +37,7 @@ export function getCookieSetting(maxAgeMs: number, role: Role): CookieOptions {
 
     // Specifies the URL path where the cookie is valid.
     // path: `/api/${role}`, // only sent to this role's endpoints
-    path: "",
+    // path: "",
     // Defines the cookie's lifespan in milliseconds.
     // Once this time elapses, the browser will automatically delete the cookie.
     maxAge: maxAgeMs,
@@ -42,7 +50,7 @@ export function getCookieSetting(maxAgeMs: number, role: Role): CookieOptions {
     // "none" allows cross-domain backend/frontend communication in production.
     // "lax" provides baseline CSRF protection and allows local HTTP development.
     // sameSite: IS_PRODUCTION ? "none" : "lax"
-    sameSite: "none"
+    // sameSite: "none"
   };
 
   return settings;
